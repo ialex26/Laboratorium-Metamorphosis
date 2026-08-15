@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Обратная связь по результатам оценки персонала</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+
+:root{
+  --bg-0:#070a13; --bg-1:#0c1220; --bg-2:#111a2e;
+  --glass:rgba(255,255,255,.055); --glass-strong:rgba(255,255,255,.095); --glass-hover:rgba(255,255,255,.12);
+  --border:rgba(255,255,255,.14); --border-soft:rgba(255,255,255,.08);
+  --text-0:#eef1f8; --text-1:#a7b0c7; --text-2:#69708a;
+  --teal:#52e3c2; --violet:#9b87f5; --gold:#f0b868; --rose:#ef7f9b;
+  --r-lg:22px;
+  --shadow-glass:0 8px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; min-height:100vh;
+  background:
+    radial-gradient(1100px 700px at 12% -8%, rgba(240,184,104,.16), transparent 60%),
+    radial-gradient(900px 600px at 100% 10%, rgba(82,227,194,.16), transparent 55%),
+    radial-gradient(1200px 900px at 50% 120%, rgba(155,135,245,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+  background-attachment:fixed;
+  color:var(--text-0); font-family:'Inter',system-ui,sans-serif; font-size:15.5px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:'Manrope',sans-serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+::selection{background:rgba(240,184,104,.3);}
+a{color:var(--teal);}
+
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.ambient span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:drift 26s ease-in-out infinite;}
+.ambient span:nth-child(1){width:420px;height:420px;background:var(--gold);top:-10%;left:-8%;opacity:.35;}
+.ambient span:nth-child(2){width:380px;height:380px;background:var(--teal);bottom:-14%;right:-6%;animation-delay:-9s;}
+.ambient span:nth-child(3){width:260px;height:260px;background:var(--violet);top:45%;left:60%;opacity:.22;animation-delay:-16s;}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(30px,-25px) scale(1.08);}}
+@media (prefers-reduced-motion:reduce){.ambient span{animation:none;}html{scroll-behavior:auto;}}
+
+.glass{background:var(--glass);border:1px solid var(--border);border-radius:var(--r-lg);
+  backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);box-shadow:var(--shadow-glass);}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;padding:12px 20px;margin:14px 14px 0;border-radius:18px;}
+.topbar .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0;}
+.brand .mark{width:34px;height:34px;flex:none;display:block;
+  filter:drop-shadow(0 3px 8px rgba(240,184,104,.28));}
+.brand .txt b{display:block;font-size:14px;font-weight:700;white-space:nowrap;}
+.brand .txt small{color:var(--text-1);font-size:11.5px;}
+
+.ring-wrap{display:flex;align-items:center;gap:8px;flex:none;}
+.ring{width:38px;height:38px;flex:none;}
+.ring circle{fill:none;stroke-width:4;}
+.ring .track{stroke:rgba(255,255,255,.1);}
+.ring .fill{stroke:url(#ringGrad);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset .4s ease;}
+.ring-label{font-size:11px;color:var(--text-1);line-height:1.25;}
+.ring-label b{color:var(--text-0);font-size:13px;}
+
+.topbar .btns{display:flex;gap:8px;flex:none;}
+.btn{appearance:none;border:1px solid var(--border);cursor:pointer;padding:9px 15px;border-radius:999px;font:inherit;font-weight:600;font-size:13px;
+  color:var(--text-0);background:var(--glass-strong);display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  transition:transform .15s ease, background .15s ease, box-shadow .15s ease;}
+.btn:hover{background:var(--glass-hover);transform:translateY(-1px);}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.btn-primary{background:linear-gradient(135deg, rgba(240,184,104,.28), rgba(82,227,194,.24));border-color:rgba(255,255,255,.22);}
+.btn-primary:hover{box-shadow:0 0 22px rgba(240,184,104,.25);}
+.btn-ghost{background:transparent;}
+.btn svg{width:15px;height:15px;flex:none;}
+.btn.small{padding:6px 11px;font-size:12px;}
+
+/* layout */
+.shell{display:flex;align-items:flex-start;gap:20px;max-width:1180px;margin:0 auto;padding:22px 14px 90px;}
+.sidenav{position:sticky;top:82px;flex:none;width:230px;padding:16px 14px;display:flex;flex-direction:column;gap:3px;}
+.sidenav .navlabel{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-2);padding:4px 10px 8px;}
+.navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;text-decoration:none;color:var(--text-1);font-size:13.5px;font-weight:600;transition:background .15s ease,color .15s ease;}
+.navitem:hover{background:var(--glass-strong);color:var(--text-0);}
+.navitem.active{background:var(--glass-strong);color:var(--text-0);}
+.navdot{width:9px;height:9px;border-radius:50%;flex:none;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);transition:background .2s ease,box-shadow .2s ease;}
+.navitem.done .navdot{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(240,184,104,.7);}
+.sidenav .score{margin-top:10px;padding:12px 12px;border-radius:14px;background:var(--glass-strong);font-size:12px;color:var(--text-1);}
+.sidenav .score b{color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:14px;}
+
+main{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px;}
+
+.hero{padding:26px 28px;}
+.hero .eyebrow{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 8px;}
+.hero h1{margin:0 0 8px;font-size:24px;font-weight:800;letter-spacing:-.01em;}
+.hero p{margin:0;color:var(--text-1);font-size:14px;max-width:66ch;}
+
+details.help{border-top:1px solid var(--border-soft);margin-top:16px;padding-top:14px;}
+details.help summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;font-weight:700;font-size:13.5px;color:var(--text-0);}
+details.help summary::-webkit-details-marker{display:none;}
+details.help summary .chev{transition:transform .2s ease;color:var(--text-1);flex:none;}
+details.help[open] summary .chev{transform:rotate(90deg);}
+.help-body{padding:12px 2px 2px;color:var(--text-1);font-size:13.5px;}
+.help-body h4{color:var(--text-0);font-size:13px;margin:14px 0 6px;}
+.help-body ul{margin:6px 0;padding-left:18px;}
+.help-body li{margin:4px 0;}
+.help-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+.help-chip{background:var(--glass-strong);border:1px solid var(--border-soft);border-radius:12px;padding:10px 12px;font-size:12.5px;}
+.help-chip b{display:block;color:var(--gold);font-size:12px;margin-bottom:3px;}
+
+.sec{padding:26px 28px;scroll-margin-top:90px;}
+.sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px;}
+.sec-num{flex:none;width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;background:var(--glass-strong);border:1px solid var(--border-soft);color:var(--gold);}
+.sec-head h2{margin:0;font-size:17.5px;font-weight:800;}
+.sec-head .sub{color:var(--text-1);font-size:13px;margin-top:3px;}
+.sec-note{margin:14px 0 18px;padding:12px 14px;border-radius:13px;background:rgba(155,135,245,.08);border:1px solid rgba(155,135,245,.22);color:var(--text-1);font-size:12.8px;white-space:pre-line;}
+.sec-note.gold{background:rgba(240,184,104,.08);border-color:rgba(240,184,104,.24);}
+.sec-note.teal{background:rgba(82,227,194,.07);border-color:rgba(82,227,194,.22);}
+.sec-note b{color:var(--text-0);}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:12.5px;font-weight:600;color:var(--text-1);display:flex;gap:5px;}
+.field label .req{color:var(--rose);}
+.field .hint{font-size:11.5px;color:var(--text-2);margin-top:-2px;}
+input[type=text],input[type=date],input[type=time],select,textarea{
+  width:100%;font:inherit;color:var(--text-0);background:rgba(255,255,255,.045);
+  border:1px solid var(--border-soft);border-radius:12px;padding:10px 13px;
+  transition:border-color .15s ease,background .15s ease,box-shadow .15s ease;}
+input::placeholder,textarea::placeholder{color:var(--text-2);}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.07);box-shadow:0 0 0 3px rgba(240,184,104,.14);}
+textarea{resize:vertical;min-height:64px;line-height:1.5;}
+input[type=date],input[type=time]{color-scheme:dark;}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a7b0c7' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
+
+/* checklist rows */
+.check-row{display:flex;align-items:flex-start;gap:12px;padding:11px 4px;border-bottom:1px solid var(--border-soft);}
+.check-row:last-child{border-bottom:none;}
+.check-box{flex:none;width:22px;height:22px;margin-top:1px;accent-color:var(--gold);cursor:pointer;}
+.check-row label{font-size:13.5px;color:var(--text-0);cursor:pointer;}
+.check-row .note{display:block;font-size:12px;color:var(--text-1);margin-top:2px;}
+
+/* stage cards */
+.stage{border:1px solid var(--border-soft);border-radius:16px;padding:16px 18px;margin-bottom:12px;background:rgba(255,255,255,.025);}
+.stage-head{display:flex;align-items:center;gap:12px;}
+.stage-num{flex:none;width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;background:var(--glass-strong);color:var(--teal);border:1px solid var(--border-soft);}
+.stage-head h3{margin:0;font-size:14.5px;font-weight:700;flex:1;}
+.stage-body{margin:10px 0 0 44px;font-size:12.8px;color:var(--text-1);}
+.stage-body .say{margin-top:8px;padding:9px 12px;border-radius:10px;background:rgba(82,227,194,.06);border:1px solid rgba(82,227,194,.18);font-style:italic;color:var(--text-0);}
+
+/* cycle diagram */
+.cycle{display:flex;flex-wrap:wrap;align-items:center;gap:0;margin:18px 0 6px;}
+.cnode{flex:1;min-width:120px;background:var(--glass-strong);border:1px solid var(--border-soft);border-radius:14px;padding:12px 12px;text-align:center;font-size:12px;color:var(--text-0);font-weight:600;}
+.cnode span{display:block;font-size:10.5px;color:var(--text-2);font-weight:500;margin-top:3px;}
+.carrow{flex:none;width:26px;text-align:center;color:var(--text-2);font-size:16px;}
+@media (max-width:760px){.cycle{flex-direction:column;}.carrow{transform:rotate(90deg);}}
+
+/* faq accordion */
+.faq{border:1px solid var(--border-soft);border-radius:14px;margin-bottom:10px;overflow:hidden;background:rgba(255,255,255,.025);}
+.faq summary{cursor:pointer;list-style:none;padding:13px 16px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:13.5px;}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary .chev{transition:transform .2s ease;color:var(--text-1);flex:none;}
+.faq[open] summary .chev{transform:rotate(90deg);}
+.faq .a{padding:0 16px 15px 16px;color:var(--text-1);font-size:13px;line-height:1.6;}
+
+.finish{padding:24px 28px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.finish p{margin:0;color:var(--text-1);font-size:12.8px;flex:1;min-width:220px;}
+
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:100;}
+#toast.show{opacity:1;transform:translate(-50%,0);}
+
+#printSheet{display:none;}
+
+@media (max-width:980px){
+  .shell{flex-direction:column;}
+  .sidenav{position:static;width:100%;flex-direction:row;overflow-x:auto;gap:8px;padding:10px;-webkit-overflow-scrolling:touch;}
+  .sidenav .navlabel,.sidenav .score{display:none;}
+  .navitem{flex:none;}
+  .grid{grid-template-columns:1fr;}
+}
+@media (max-width:680px){
+  .topbar{flex-wrap:wrap;}
+  .topbar .btns{width:100%;order:3;justify-content:flex-start;}
+  .hero h1{font-size:20px;}
+  .help-grid{grid-template-columns:1fr;}
+  .stage-body{margin-left:0;}
+}
+
+@media print{
+  @page{size:A4;margin:10mm 12mm;}
+  html,body{background:#fff !important;color:#111 !important;font-family:'Inter',Arial,sans-serif;}
+  .ambient,.topbar,.sidenav,#toast,.shell>main>.glass{display:none !important;}
+  #printSheet{display:block !important;}
+  #printSheet *{box-sizing:border-box;}
+  .p-title{font-family:'Manrope',Arial,sans-serif;font-size:19px;font-weight:800;margin:0 0 2mm;}
+  .p-sub{font-size:10.5px;color:#555;margin:0 0 6mm;}
+  .p-section{margin:5mm 0;page-break-inside:avoid;}
+  .p-section h2{font-family:'Manrope',Arial,sans-serif;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin:0 0 2.5mm;padding-bottom:1.5mm;border-bottom:1px solid #ccc;color:#111;}
+  .p-kv{width:100%;border-collapse:collapse;font-size:10.5px;}
+  .p-kv td{padding:1.6mm 2mm;vertical-align:top;border-bottom:1px solid #eee;}
+  .p-kv td.k{width:42mm;color:#666;font-weight:600;}
+  .p-text{font-size:10.5px;white-space:pre-wrap;line-height:1.5;padding:1mm 0;}
+  .p-stage{margin:0 0 3mm;page-break-inside:avoid;}
+  .p-stage .t{font-size:10.5px;font-weight:700;}
+  .p-stage .d{font-size:9.3px;color:#555;margin-top:.5mm;}
+  .p-faq{margin:0 0 3mm;page-break-inside:avoid;}
+  .p-faq .q{font-size:10px;font-weight:700;}
+  .p-faq .a{font-size:9.3px;color:#444;margin-top:.5mm;}
+  .p-empty{color:#999;font-style:italic;font-size:10px;}
+  .p-foot{margin-top:6mm;font-size:8.5px;color:#999;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><span></span><span></span><span></span></div>
+
+<header class="topbar glass">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="markBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f6cd90"/>
+          <stop offset="50%" stop-color="#52e3c2"/>
+          <stop offset="100%" stop-color="#9b87f5"/>
+        </linearGradient>
+        <linearGradient id="markGloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".5"/>
+          <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+        <radialGradient id="markSheen" cx="26%" cy="16%" r="80%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".65"/>
+          <stop offset="45%" stop-color="#ffffff" stop-opacity=".1"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="markDiscFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".98"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity=".82"/>
+        </linearGradient>
+        <linearGradient id="markCheck" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2fae94"/>
+          <stop offset="100%" stop-color="#8a72e8"/>
+        </linearGradient>
+        <filter id="badgeDrop" x="-60%" y="-60%" width="220%" height="220%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#1a0f00" flood-opacity=".35"/>
+        </filter>
+        <filter id="discDrop" x="-80%" y="-80%" width="260%" height="260%">
+          <feDropShadow dx="0" dy="1.1" stdDeviation="1" flood-color="#1a0f00" flood-opacity=".28"/>
+        </filter>
+      </defs>
+
+      <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#markBg)" filter="url(#badgeDrop)"/>
+      <rect x="1" y="1" width="32" height="14" rx="10" fill="url(#markGloss)"/>
+      <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#markSheen)"/>
+      <rect x="1.5" y="1.5" width="31" height="31" rx="9.5" fill="none" stroke="#ffffff" stroke-opacity=".32" stroke-width=".8"/>
+
+      <circle cx="17" cy="17.5" r="8.4" fill="url(#markDiscFill)" filter="url(#discDrop)"/>
+      <path d="M9.7 14.4a8.4 8.4 0 0 1 12.3-6.3" fill="none" stroke="#ffffff" stroke-opacity=".9" stroke-width="1" stroke-linecap="round"/>
+      <path d="M13.2 17.7l2.7 2.6 5.3-5.9" stroke="url(#markCheck)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div class="txt"><b>Обратная связь по оценке персонала</b><small>памятка и рабочий инструмент для встречи</small></div>
+  </div>
+  <div class="ring-wrap">
+    <svg class="ring" viewBox="0 0 40 40">
+      <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0b868"/><stop offset="100%" stop-color="#52e3c2"/></linearGradient></defs>
+      <circle class="track" cx="20" cy="20" r="16"/>
+      <circle class="fill" id="ringFill" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/>
+    </svg>
+    <div class="ring-label"><b id="pct">0%</b><br>готовность</div>
+  </div>
+  <div class="btns">
+    <button class="btn btn-ghost small" id="btnLoad" title="Загрузить черновик из файла">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Черновик
+    </button>
+    <input type="file" id="fileInput" accept="application/json" style="display:none">
+    <button class="btn btn-ghost small" id="btnSaveDraft" title="Скачать черновик (JSON)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 12l-4-4m4 4l4-4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg>Сохранить
+    </button>
+    <button class="btn" id="btnPrint" title="Печатная шпаргалка А4">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Печать / PDF
+    </button>
+    <button class="btn btn-primary" id="btnExcel" title="Выгрузить в Excel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Excel
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidenav glass" id="sidenav">
+    <div class="navlabel">Разделы</div>
+    <a class="navitem" data-target="s1" href="#s1"><span class="navdot"></span>1 · Перед встречей</a>
+    <a class="navitem" data-target="s2" href="#s2"><span class="navdot"></span>2 · Структура беседы</a>
+    <a class="navitem" data-target="s3" href="#s3"><span class="navdot"></span>3 · Цикл ОС</a>
+    <a class="navitem" data-target="s4" href="#s4"><span class="navdot"></span>4 · Возражения</a>
+    <a class="navitem" data-target="s5" href="#s5"><span class="navdot"></span>5 · Итоги встречи</a>
+    <div class="score">Пройдено пунктов<br><b id="scoreLabel">0 / 11</b></div>
+  </nav>
+
+  <main>
+    <section class="hero glass">
+      <p class="eyebrow">Памятка + рабочий инструмент</p>
+      <h1>Обратная связь по результатам оценки персонала</h1>
+      <p>Структура беседы, готовые скрипты ответов на типовые возражения и лист для заметок — на основе вашего корпоративного материала и практики проведения обратной связи после оценки. Заполните разделы перед встречей, отмечайте пункты по ходу разговора, в конце — печатная шпаргалка А4 или выгрузка записи встречи в Excel.</p>
+
+      <details class="help">
+        <summary><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>Памятка: как построить эффективную обратную связь</summary>
+        <div class="help-body">
+          <h4>Главный принцип</h4>
+          <p>ОС — это всегда диалог, а не монолог с зачитыванием отчёта. Один принцип работает для всех инструментов оценки — психометрики, опроса 360, чек-листов, интервью, ассессмент-центра: обратную связь строят на рефлексии респондента, обращая его внимание на собственный прошлый опыт.</p>
+          <h4>Результат оценки — прогноз, а не диагноз</h4>
+          <p>Абсолютно точного инструмента оценки не существует, у каждого есть своя методология и погрешность. Это стоит проговорить с респондентом в начале встречи, чтобы снизить тревогу и защитную реакцию.</p>
+          <h4>SBI — точечная техника внутри диалога</h4>
+          <p>Для обсуждения конкретного поведения удобна модель <b style="color:#eef1f8">Ситуация → Поведение → Влияние</b> (Center for Creative Leadership): опишите когда и где это произошло, что именно человек сделал — только наблюдаемые факты, без интерпретаций, и как это повлияло на результат. Такая конкретика снижает защитную реакцию лучше, чем общие оценочные фразы.</p>
+          <h4>Почему возникают возражения</h4>
+          <p>Исследователи Гарварда Стоун и Хин («Thanks for the Feedback») показывают: сопротивление обратной связи почти всегда вызвано одним из трёх триггеров — сомнение в точности («это неверно»), отношение к тому, кто говорит («кто вы такой, чтобы судить»), или угроза самооценке («что это говорит обо мне»). Все шесть скриптов в разделе 4 — это, по сути, ответы на триггер точности: они возвращают разговор к методологии и фактам, а не к спору.</p>
+          <div class="help-grid">
+            <div class="help-chip"><b>Баланс</b>Показывайте не только зоны роста, но и сильные стороны — это создаёт доверие к остальным выводам</div>
+            <div class="help-chip"><b>Подготовка</b>Предупредите о времени и теме встречи заранее — так реакция респондента будет спокойнее</div>
+            <div class="help-chip"><b>После встречи</b>Отчёт отдаётся респонденту после разговора, а не рассылается формально по почте заранее</div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ SECTION 1 ============ -->
+    <section class="sec glass" id="s1">
+      <div class="sec-head">
+        <div class="sec-num">01</div>
+        <div><h2>Перед встречей</h2><div class="sub">Данные встречи и чек-лист подготовки</div></div>
+      </div>
+
+      <div class="grid" style="margin-top:18px;">
+        <div class="field">
+          <label>ФИО респондента <span class="req">*</span></label>
+          <input type="text" id="fio" data-req="1" placeholder="Иванов Иван Иванович">
+        </div>
+        <div class="field">
+          <label>Должность</label>
+          <input type="text" id="position" placeholder="Специалист отдела продаж">
+        </div>
+        <div class="field">
+          <label>Подразделение</label>
+          <input type="text" id="department" placeholder="Отдел продаж">
+        </div>
+        <div class="field">
+          <label>Инструмент оценки</label>
+          <select id="tool">
+            <option value="">— выбрать —</option>
+            <option>Ассессмент-центр</option>
+            <option>Психометрический тест способностей</option>
+            <option>Личностный опросник</option>
+            <option>Опрос 360</option>
+            <option>Интервью по компетенциям</option>
+            <option>Другое</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Дата встречи</label>
+          <input type="date" id="meetDate">
+        </div>
+        <div class="field">
+          <label>Проводит встречу</label>
+          <input type="text" id="host" placeholder="ФИО эксперта / HR">
+        </div>
+        <div class="field full">
+          <label>Ключевые компетенции к обсуждению</label>
+          <input type="text" id="competencies" placeholder="Например: работа в команде, стрессоустойчивость">
+        </div>
+        <div class="check-row full" style="grid-column:1/-1;">
+          <input type="checkbox" class="check-box" id="managerPresent">
+          <label for="managerPresent">На встрече присутствует непосредственный руководитель<span class="note">Повышает согласованность по решениям о развитии — необязательно, но полезно</span></label>
+        </div>
+      </div>
+
+      <div id="note360" class="sec-note" style="display:none; margin-top:4px;"><b>Важно для опроса 360:</b> не раскрывайте, кто из коллег поставил ту или иную оценку — анонимность источников защищает честность будущих опросов. Обсуждайте только агрегированные результаты и паттерны.</div>
+
+      <div class="sec-note gold" style="margin-top:10px;"><b>Совет:</b> проанализируйте профиль целиком до встречи — отметьте не только зоны развития, но обязательно и сильные стороны. Это не просто такт: по данным Gallup, при фокусе руководителя на сильных сторонах вовлечённость сотрудников почти вдвое выше, чем при фокусе на слабых.</div>
+
+      <div class="field full" style="margin-top:6px;">
+        <label>Чек-лист подготовки</label>
+      </div>
+      <div id="prepChecklist"></div>
+    </section>
+
+    <!-- ============ SECTION 2 ============ -->
+    <section class="sec glass" id="s2">
+      <div class="sec-head">
+        <div class="sec-num">02</div>
+        <div><h2>Структура беседы</h2><div class="sub">Пять этапов разговора — отмечайте по ходу встречи</div></div>
+      </div>
+      <div id="stagesContainer" style="margin-top:16px;"></div>
+    </section>
+
+    <!-- ============ SECTION 3 ============ -->
+    <section class="sec glass" id="s3">
+      <div class="sec-head">
+        <div class="sec-num">03</div>
+        <div><h2>Цикл обратной связи</h2><div class="sub">Как строится «основная часть» — диалог на рефлексии</div></div>
+      </div>
+      <div class="sec-note">Обращаем внимание респондента на его прошлый опыт и проговариваем его с ним. Если он приводит правильный пример — спрашиваем: «Как по-вашему, почему получились такие результаты?» — и так далее по кругу.</div>
+      <div class="cycle">
+        <div class="cnode">Вопрос / гипотеза</div><div class="carrow">→</div>
+        <div class="cnode">Ответ респондента</div><div class="carrow">→</div>
+        <div class="cnode">Рефлексия / пример</div><div class="carrow">→</div>
+        <div class="cnode">Выводы<span>подтверждение / опровержение</span></div><div class="carrow">→</div>
+        <div class="cnode">Рекомендации</div>
+      </div>
+      <div class="sec-note teal" style="margin-top:16px;">Внутри этого цикла для отдельного наблюдения из отчёта удобно использовать SBI: <b>Ситуация</b> (когда и где) → <b>Поведение</b> (что именно сделал, только факты) → <b>Влияние</b> (как это отразилось на результате).</div>
+    </section>
+
+    <!-- ============ SECTION 4 ============ -->
+    <section class="sec glass" id="s4">
+      <div class="sec-head">
+        <div class="sec-num">04</div>
+        <div><h2>Скрипты ответов на возражения</h2><div class="sub">Типовые вопросы и несогласия респондента</div></div>
+      </div>
+      <div id="faqContainer" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- ============ SECTION 5 ============ -->
+    <section class="sec glass" id="s5">
+      <div class="sec-head">
+        <div class="sec-num">05</div>
+        <div><h2>Итоги встречи</h2><div class="sub">Скрипт завершения, заметки и рекомендации после ОС</div></div>
+      </div>
+
+      <div class="stage" style="margin-top:16px;">
+        <div class="stage-body" style="margin-left:0;">
+          <div class="say">«Давайте подведём итог. Мы с вами проговорили все результаты. Договорились о следующих шагах… Скажите, остались ли у вас вопросы?»</div>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label>Заметки: вопросы и возражения на встрече</label>
+        <textarea id="notesQuestions" placeholder="Что спрашивал респондент, какие возражения возникли и как были сняты"></textarea>
+      </div>
+      <div class="field full">
+        <label>Договорённости и следующие шаги</label>
+        <textarea id="notesAgreements" placeholder="О чём договорились: сроки, конкретные шаги развития"></textarea>
+      </div>
+      <div class="field">
+        <label>Дата контрольной встречи</label>
+        <input type="date" id="followUpDate">
+        <div class="hint">Обратная связь без последующей сверки прогресса теряет большую часть эффекта — назначьте дату заранее.</div>
+      </div>
+
+      <div id="closeChecklist"></div>
+
+      <div class="sec-note gold" style="margin-top:16px;"><b>Рекомендации после встречи:</b> направить сотрудника в Управление обучения и развития для помощи в составлении ИПР; предложить ознакомиться с описанием компетенций во второй половине отчёта (курсы, фильмы, книги); помочь найти ментора с сильно выраженными нужными компетенциями.</div>
+    </section>
+
+    <section class="finish glass">
+      <p>Встреча прошла? Выгрузите запись в Excel для архива или распечатайте шпаргалку А4, чтобы взять с собой на встречу.</p>
+      <button class="btn btn-ghost" id="btnPrint2">Печать / PDF</button>
+      <button class="btn btn-primary" id="btnExcel2">Скачать Excel</button>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<!-- ============ PRINT SHEET ============ -->
+<div id="printSheet">
+  <div class="p-title">Обратная связь по результатам оценки персонала</div>
+  <div class="p-sub" id="pSub"></div>
+
+  <div class="p-section">
+    <h2>Данные встречи</h2>
+    <table class="p-kv" id="pMeta"></table>
+  </div>
+
+  <div class="p-section">
+    <h2>Структура беседы</h2>
+    <div id="pStages"></div>
+  </div>
+
+  <div class="p-section">
+    <h2>Скрипты ответов на возражения</h2>
+    <div id="pFaq"></div>
+  </div>
+
+  <div class="p-section">
+    <h2>Заметки и договорённости</h2>
+    <div class="p-text" id="pNotes"></div>
+  </div>
+
+  <div class="p-foot">Обратная связь по результатам оценки персонала</div>
+</div>
+
+<script>
+/* ============ CONFIG ============ */
+var PREP_ITEMS = [
+  {id:'prep1', text:'Изучил(а) данные комплексно — весь профиль, а не только слабые места'},
+  {id:'prep2', text:'Отметил(а) сильные стороны и зоны роста — для баланса подачи'},
+  {id:'prep3', text:'Учёл(а) контекст оценки — для чего именно она проводилась'},
+  {id:'prep4', text:'Продумал(а) структуру и тональность беседы заранее'},
+  {id:'prep5', text:'Предупредил(а) сотрудника о времени и теме встречи заранее'},
+  {id:'prep6', text:'Помню: результат оценки — прогноз (вероятность), а не диагноз'}
+];
+
+var STAGES = [
+  {title:'Приветствие', desc:'Представьтесь, если видитесь впервые: «Меня зовут…».', say:''},
+  {title:'Правила', desc:'О чём будем говорить, сколько по времени, в каком порядке. После правил спросите, ознакомился ли респондент с отчётом и есть ли вопросы. Если есть — молча выслушайте и запишите: это позволяет выплеснуть негатив и выговориться. Уточните, все ли вопросы озвучены, и сообщите, что ответите на них по ходу встречи.', say:'«Сегодня у нас 40 минут, обсудим результаты по порядку. Вы уже успели посмотреть отчёт — есть вопросы, которые хотелось бы обсудить сразу?»'},
+  {title:'Основная часть (диалог)', desc:'Разбор результатов по циклу: вопрос/гипотеза → ответ респондента → рефлексия/пример → выводы → рекомендации. Напомните, что результат оценки — не диагноз, а прогноз, у любого инструмента есть своя методология и погрешность.', say:''},
+  {title:'Подведение итогов', desc:'Шаги, которые согласовали, и мнение респондента о встрече.', say:'«Давайте подведём итог. Мы с вами проговорили все результаты. Договорились о следующих шагах… Скажите, остались ли у вас вопросы?»'},
+  {title:'Завершение', desc:'Поблагодарите за открытый разговор и попрощайтесь.', say:''}
+];
+
+var FAQ = [
+  {q:'Что означают цифры в модели компетенций? Я лучше или хуже других?',
+   a:'Цифры отражают уровень выраженности компетенции: 0 — низкий, 3 — высокий. Целевой уровень 2 — это то, что ожидает компания. Сравнивать нужно не с другими людьми, а с целевым уровнем, который установила компания. Текущий уровень говорит о том, какие компетенции стоит подтянуть.'},
+  {q:'Я не согласен с результатами теста способностей!',
+   a:'Тесты сертифицированы на территории РФ, их проходят сотни тысяч сотрудников разных компаний. Условия равные для всех: тот же таймер, тот же банк вопросов. Результаты строятся на сравнении с нормативной группой — например, менеджеры по всей России. Предложите обдумать эту информацию ещё раз.'},
+  {q:'Я не согласен с результатами личностного опросника!',
+   a:'Такие инструменты имеют свои ограничения. Опросник и его результаты строятся на массиве данных, собранных по всей России. Он не говорит, что хорошо, а что плохо — он показывает отклонения от нормы большинства. Эти отклонения в одной ситуации могут быть полезны, а в другой — нет. Одно из ограничений: респондент мог отвечать не вполне откровенно, и тогда результаты получились искажёнными.'},
+  {q:'Я не согласен с оценками по компетенциям!',
+   a:'Уточните, с какой конкретно оценкой не согласен респондент. Напомните про интервью или АЦ, где он отвечал на вопросы эксперта и рассказывал про свой опыт — спросите, как по его мнению эксперт пришёл к такому баллу.<br><br>Обращаем внимание респондента на его прошлый опыт и проговариваем его с ним. Если он приводит пример, который опровергает полученные результаты оценки, просим его привести ещё пример — спрашиваем: «Хорошо. А можете привести ещё пример?»<br><br>Если и второй пример опровергает результаты оценки, можно спросить: «Как по-вашему, почему получились такие результаты, хотя вы приводите примеры, которые не подтверждают эти результаты?» — и внимательно слушаем размышления респондента.<br><br>Может случиться так, что респондент сам скажет: видимо, я недостаточно чётко отвечал на вопросы во время интервью или ассессмент-центра — или приведёт иные аргументы. Но вероятнее всего либо респондент не сможет привести примеры, опровергающие низкие результаты оценки, либо он не сможет верно презентовать результаты своей работы (что и послужило причиной низких оценок ИК или АЦ).<div class="cycle" style="margin:14px 0 4px;"><div class="cnode" style="font-size:11px;">Пример опровергает результат</div><div class="carrow">→</div><div class="cnode" style="font-size:11px;">«А можете привести ещё пример?»<span>просим второй пример</span></div><div class="carrow">→</div><div class="cnode" style="font-size:11px;">2-й пример тоже опровергает?</div><div class="carrow">→</div><div class="cnode" style="font-size:11px;">«Как по-вашему, почему получились такие результаты?»<span>слушаем размышления</span></div><div class="carrow">→</div><div class="cnode" style="font-size:11px;">Вывод<span>чаще всего: нет опровергающих примеров или неверная самопрезентация на ИК/АЦ</span></div></div>Вернитесь к индикаторам модели компетенций и подведите итог: что нужно сделать, чтобы балл был выше.'},
+  {q:'Где я могу посмотреть модель компетенций развёрнуто?',
+   a:'В приложении к Стандарту по оценке персонала — выгрузка из 1С или корпоративной базы знаний. Либо в самом отчёте есть ссылка, которая ведёт к файлу «Модель компетенций».'},
+  {q:'Как вы выставляете оценки?',
+   a:'Баллы выставляются на основе международной методологии: эксперт анализирует ответы и действия на интервью или АЦ и сопоставляет их с индикаторами модели компетенций, привязанными к шкале от 0 до 3. Например: постановка амбициозных целей, влияющих на всю компанию, и их достижение — 3 балла; повседневные цели с горизонтом в 1 день — 0,5 балла.'}
+];
+
+var CLOSE_ITEMS = [
+  {id:'close1', text:'Отчёт передан сотруднику после встречи (не разослан заранее)'},
+  {id:'close2', text:'Обсудили рекомендации по развитию — компетенции, курсы, менторство'},
+  {id:'close3', text:'Договорились о конкретных следующих шагах и сроках'}
+];
+
+/* ============ BUILD DOM ============ */
+function buildChecklist(container, items){
+  items.forEach(function(item){
+    var row = document.createElement('div');
+    row.className = 'check-row';
+    row.innerHTML =
+      '<input type="checkbox" class="check-box" id="'+item.id+'">' +
+      '<label for="'+item.id+'">'+item.text+'</label>';
+    container.appendChild(row);
+  });
+}
+buildChecklist(document.getElementById('prepChecklist'), PREP_ITEMS);
+buildChecklist(document.getElementById('closeChecklist'), CLOSE_ITEMS);
+
+var stagesContainer = document.getElementById('stagesContainer');
+STAGES.forEach(function(stage, i){
+  var el = document.createElement('div');
+  el.className = 'stage';
+  el.innerHTML =
+    '<div class="stage-head">' +
+      '<div class="stage-num">'+(i+1)+'</div>' +
+      '<h3>'+stage.title+'</h3>' +
+      '<input type="checkbox" class="check-box" id="stage'+i+'" title="Отметить как пройдено">' +
+    '</div>' +
+    '<div class="stage-body">'+stage.desc+ (stage.say ? '<div class="say">'+stage.say+'</div>' : '') + '</div>';
+  stagesContainer.appendChild(el);
+});
+
+var faqContainer = document.getElementById('faqContainer');
+FAQ.forEach(function(item){
+  var el = document.createElement('details');
+  el.className = 'faq';
+  el.innerHTML =
+    '<summary><svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>«'+item.q+'»</summary>' +
+    '<div class="a">'+item.a+'</div>';
+  faqContainer.appendChild(el);
+});
+
+/* ============ PROGRESS ============ */
+var ringFill = document.getElementById('ringFill');
+var RING_LEN = 100.5;
+var TOTAL_ITEMS = PREP_ITEMS.length + STAGES.length; // 6 + 5 = 11
+
+function computeProgress(){
+  var reqEls = document.querySelectorAll('[data-req="1"]');
+  var reqFilled = 0;
+  reqEls.forEach(function(el){ if (el.value.trim() !== '') reqFilled++; });
+
+  var checked = 0;
+  PREP_ITEMS.forEach(function(it){ if (document.getElementById(it.id).checked) checked++; });
+  STAGES.forEach(function(_, i){ if (document.getElementById('stage'+i).checked) checked++; });
+
+  var pct = Math.round(((checked / TOTAL_ITEMS) * 0.85 + (reqEls.length ? (reqFilled/reqEls.length) : 0) * 0.15) * 100);
+  document.getElementById('pct').textContent = pct + '%';
+  ringFill.style.strokeDashoffset = RING_LEN - (RING_LEN * pct / 100);
+  document.getElementById('scoreLabel').textContent = checked + ' / ' + TOTAL_ITEMS;
+
+  var s1done = reqFilled === reqEls.length && checked >= 1;
+  var prepDone = PREP_ITEMS.every(function(it){ return document.getElementById(it.id).checked; });
+  var stageDone = STAGES.every(function(_, i){ return document.getElementById('stage'+i).checked; });
+  var notesFilled = document.getElementById('notesQuestions').value.trim() !== '' || document.getElementById('notesAgreements').value.trim() !== '';
+
+  setDone('s1', prepDone);
+  setDone('s2', stageDone);
+  setDone('s3', false);
+  setDone('s4', false);
+  setDone('s5', notesFilled);
+}
+function setDone(id, val){
+  var nav = document.querySelector('.navitem[data-target="'+id+'"]');
+  if (nav) nav.classList.toggle('done', val);
+}
+function bindProgressListeners(){
+  document.querySelectorAll('input, textarea, select').forEach(function(el){
+    el.removeEventListener('input', computeProgress);
+    el.addEventListener('input', computeProgress);
+    el.removeEventListener('change', computeProgress);
+    el.addEventListener('change', computeProgress);
+  });
+}
+bindProgressListeners();
+computeProgress();
+
+document.getElementById('tool').addEventListener('change', function(){
+  document.getElementById('note360').style.display = (this.value === 'Опрос 360') ? 'block' : 'none';
+});
+
+/* active section highlight */
+var sections = ['s1','s2','s3','s4','s5'].map(function(id){ return document.getElementById(id); });
+var navItems = document.querySelectorAll('.navitem');
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if (entry.isIntersecting){
+      var active = document.querySelector('.navitem[data-target="'+entry.target.id+'"]');
+      navItems.forEach(function(n){ n.classList.toggle('active', n === active); });
+    }
+  });
+}, {rootMargin:'-40% 0px -50% 0px'});
+sections.forEach(function(s){ if (s) io.observe(s); });
+
+/* ============ TOAST ============ */
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'glass show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+/* ============ COLLECT / APPLY DATA ============ */
+function val(id){ var el = document.getElementById(id); return el ? el.value : ''; }
+function setVal(id, v){ var el = document.getElementById(id); if (el && v !== undefined) el.value = v; }
+function chk(id){ var el = document.getElementById(id); return el ? el.checked : false; }
+function setChk(id, v){ var el = document.getElementById(id); if (el) el.checked = !!v; }
+
+function collectData(){
+  var d = {
+    fio: val('fio'), position: val('position'), department: val('department'),
+    tool: val('tool'), meetDate: val('meetDate'), host: val('host'), competencies: val('competencies'),
+    managerPresent: chk('managerPresent'),
+    notesQuestions: val('notesQuestions'), notesAgreements: val('notesAgreements'), followUpDate: val('followUpDate'),
+    prep: {}, stages: {}, close: {}
+  };
+  PREP_ITEMS.forEach(function(it){ d.prep[it.id] = chk(it.id); });
+  STAGES.forEach(function(_, i){ d.stages['stage'+i] = chk('stage'+i); });
+  CLOSE_ITEMS.forEach(function(it){ d.close[it.id] = chk(it.id); });
+  return d;
+}
+function applyData(d){
+  ['fio','position','department','tool','meetDate','host','competencies','notesQuestions','notesAgreements','followUpDate'].forEach(function(id){ setVal(id, d[id]); });
+  setChk('managerPresent', d.managerPresent);
+  document.getElementById('note360').style.display = (d.tool === 'Опрос 360') ? 'block' : 'none';
+  if (d.prep) PREP_ITEMS.forEach(function(it){ setChk(it.id, d.prep[it.id]); });
+  if (d.stages) STAGES.forEach(function(_, i){ setChk('stage'+i, d.stages['stage'+i]); });
+  if (d.close) CLOSE_ITEMS.forEach(function(it){ setChk(it.id, d.close[it.id]); });
+  bindProgressListeners();
+  computeProgress();
+}
+
+/* ============ DRAFT SAVE / LOAD ============ */
+document.getElementById('btnSaveDraft').addEventListener('click', function(){
+  var data = collectData();
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var name = (data.fio || 'ОС').replace(/[^\wа-яА-ЯёЁ\- ]/g,'').trim() || 'ОС';
+  a.href = url; a.download = 'Черновик_ОС_' + name + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Черновик сохранён в файл');
+});
+document.getElementById('btnLoad').addEventListener('click', function(){ document.getElementById('fileInput').click(); });
+document.getElementById('fileInput').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{ applyData(JSON.parse(ev.target.result)); toast('Черновик загружен'); }
+    catch(err){ toast('Не удалось прочитать файл'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ============ EXCEL EXPORT ============ */
+function exportExcel(){
+  var d = collectData();
+  var rows = [];
+  rows.push(['ОБРАТНАЯ СВЯЗЬ ПО РЕЗУЛЬТАТАМ ОЦЕНКИ ПЕРСОНАЛА']);
+  rows.push([]);
+  rows.push(['ДАННЫЕ ВСТРЕЧИ']);
+  rows.push(['ФИО респондента', d.fio]);
+  rows.push(['Должность', d.position]);
+  rows.push(['Подразделение', d.department]);
+  rows.push(['Инструмент оценки', d.tool]);
+  rows.push(['Дата встречи', d.meetDate]);
+  rows.push(['Проводит встречу', d.host]);
+  rows.push(['Ключевые компетенции', d.competencies]);
+  rows.push(['Присутствует руководитель', d.managerPresent ? 'да' : '']);
+  rows.push([]);
+  rows.push(['ЧЕК-ЛИСТ ПОДГОТОВКИ']);
+  PREP_ITEMS.forEach(function(it){ rows.push([it.text, d.prep[it.id] ? 'да' : '']); });
+  rows.push([]);
+  rows.push(['СТРУКТУРА БЕСЕДЫ — ПРОЙДЕНО']);
+  STAGES.forEach(function(st, i){ rows.push([st.title, d.stages['stage'+i] ? 'да' : '']); });
+  rows.push([]);
+  rows.push(['ЗАМЕТКИ И ДОГОВОРЁННОСТИ']);
+  rows.push(['Вопросы и возражения', d.notesQuestions]);
+  rows.push(['Договорённости', d.notesAgreements]);
+  rows.push(['Дата контрольной встречи', d.followUpDate]);
+  rows.push([]);
+  rows.push(['ИТОГИ ВСТРЕЧИ']);
+  CLOSE_ITEMS.forEach(function(it){ rows.push([it.text, d.close[it.id] ? 'да' : '']); });
+
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:46},{wch:40}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Обратная связь');
+  var name = (d.fio || 'ОС').replace(/[^\wа-яА-ЯёЁ\- ]/g,'').trim() || 'ОС';
+  XLSX.writeFile(wb, 'ОС_' + name + '.xlsx');
+  toast('Файл Excel скачан');
+}
+document.getElementById('btnExcel').addEventListener('click', exportExcel);
+document.getElementById('btnExcel2').addEventListener('click', exportExcel);
+
+/* ============ PRINT ============ */
+function fmtDate(s){ if (!s) return ''; var p = s.split('-'); return p.length===3 ? p[2]+'.'+p[1]+'.'+p[0] : s; }
+function kvRow(k, v){ return '<tr><td class="k">'+k+'</td><td>'+(v && v.trim()!=='' ? escapeHtml(v) : '<span class="p-empty">не указано</span>')+'</td></tr>'; }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+
+function preparePrint(){
+  var d = collectData();
+  document.getElementById('pSub').textContent = (fmtDate(d.meetDate) || 'дата не указана') + (d.tool ? '   ·   ' + d.tool : '');
+
+  document.getElementById('pMeta').innerHTML =
+    kvRow('ФИО респондента', d.fio) + kvRow('Должность', d.position) + kvRow('Подразделение', d.department) +
+    kvRow('Инструмент оценки', d.tool) + kvRow('Проводит встречу', d.host) + kvRow('Ключевые компетенции', d.competencies) +
+    kvRow('Присутствует руководитель', d.managerPresent ? 'да' : 'нет') + kvRow('Контрольная встреча', fmtDate(d.followUpDate));
+
+  var stagesHtml = '';
+  STAGES.forEach(function(st, i){
+    stagesHtml += '<div class="p-stage"><div class="t">'+(i+1)+'. '+st.title+(d.stages['stage'+i] ? ' ✓' : '')+'</div><div class="d">'+st.desc+'</div></div>';
+  });
+  document.getElementById('pStages').innerHTML = stagesHtml;
+
+  var faqHtml = '';
+  FAQ.forEach(function(item){
+    faqHtml += '<div class="p-faq"><div class="q">«'+item.q+'»</div><div class="a">'+item.a+'</div></div>';
+  });
+  document.getElementById('pFaq').innerHTML = faqHtml;
+
+  var notes = '';
+  notes += 'Вопросы и возражения:\n' + (d.notesQuestions && d.notesQuestions.trim() !== '' ? d.notesQuestions : '—') + '\n\n';
+  notes += 'Договорённости:\n' + (d.notesAgreements && d.notesAgreements.trim() !== '' ? d.notesAgreements : '—');
+  document.getElementById('pNotes').textContent = notes;
+}
+function doPrint(){ preparePrint(); setTimeout(function(){ window.print(); }, 60); }
+document.getElementById('btnPrint').addEventListener('click', doPrint);
+document.getElementById('btnPrint2').addEventListener('click', doPrint);
+window.addEventListener('beforeprint', preparePrint);
+</script>
+</body>
+</html>

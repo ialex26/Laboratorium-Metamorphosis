@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Индивидуальный план развития — ИПР</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+
+/* ============ TOKENS ============ */
+:root{
+  --bg-0:#070a13;
+  --bg-1:#0c1220;
+  --bg-2:#111a2e;
+  --glass:rgba(255,255,255,.055);
+  --glass-strong:rgba(255,255,255,.095);
+  --glass-hover:rgba(255,255,255,.12);
+  --border:rgba(255,255,255,.14);
+  --border-soft:rgba(255,255,255,.08);
+  --text-0:#eef1f8;
+  --text-1:#a7b0c7;
+  --text-2:#69708a;
+  --teal:#52e3c2;
+  --violet:#9b87f5;
+  --gold:#f0b868;
+  --rose:#ef7f9b;
+  --r-sm:10px;
+  --r-md:16px;
+  --r-lg:22px;
+  --shadow-glass:0 8px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(1100px 700px at 12% -8%, rgba(155,135,245,.22), transparent 60%),
+    radial-gradient(900px 600px at 100% 10%, rgba(82,227,194,.16), transparent 55%),
+    radial-gradient(1200px 900px at 50% 120%, rgba(82,227,194,.10), transparent 60%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+  background-attachment:fixed;
+  color:var(--text-0);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:15.5px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:'Manrope',sans-serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+
+::selection{background:rgba(82,227,194,.3);}
+
+a{color:var(--teal);}
+
+/* ambient drifting glow */
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.ambient span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:drift 26s ease-in-out infinite;}
+.ambient span:nth-child(1){width:420px;height:420px;background:var(--violet);top:-10%;left:-8%;}
+.ambient span:nth-child(2){width:380px;height:380px;background:var(--teal);bottom:-14%;right:-6%;animation-delay:-9s;}
+.ambient span:nth-child(3){width:260px;height:260px;background:var(--gold);top:45%;left:60%;opacity:.18;animation-delay:-16s;}
+@keyframes drift{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(30px,-25px) scale(1.08);}
+}
+@media (prefers-reduced-motion:reduce){
+  .ambient span{animation:none;}
+  html{scroll-behavior:auto;}
+}
+
+/* ============ GLASS PRIMITIVE ============ */
+.glass{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:var(--shadow-glass);
+}
+
+/* ============ TOPBAR ============ */
+.topbar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:14px;
+  padding:12px 20px;
+  margin:14px 14px 0;
+  border-radius:18px;
+}
+.topbar .brand{display:flex; align-items:center; gap:10px; margin-right:auto; min-width:0;}
+.brand .mark{
+  width:34px;height:34px;flex:none;display:block;
+  filter:drop-shadow(0 3px 8px rgba(82,227,194,.25));
+}
+.brand .txt{min-width:0;}
+.brand .txt b{display:block;font-size:14px;font-weight:700;letter-spacing:.2px;white-space:nowrap;}
+.brand .txt small{color:var(--text-1);font-size:11.5px;}
+
+.ring-wrap{display:flex;align-items:center;gap:8px;flex:none;}
+.ring{width:38px;height:38px;flex:none;}
+.ring circle{fill:none;stroke-width:4;}
+.ring .track{stroke:rgba(255,255,255,.1);}
+.ring .fill{stroke:url(#ringGrad);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset .4s ease;}
+.ring-label{font-size:11px;color:var(--text-1);line-height:1.25;}
+.ring-label b{color:var(--text-0);font-size:13px;}
+
+.topbar .btns{display:flex;gap:8px;flex:none;}
+.btn{
+  appearance:none;border:1px solid var(--border);cursor:pointer;
+  padding:9px 15px;border-radius:999px;font:inherit;font-weight:600;font-size:13px;
+  color:var(--text-0);background:var(--glass-strong);
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  transition:transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.btn:hover{background:var(--glass-hover);transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.btn-primary{
+  background:linear-gradient(135deg, rgba(82,227,194,.28), rgba(155,135,245,.28));
+  border-color:rgba(255,255,255,.22);
+}
+.btn-primary:hover{box-shadow:0 0 22px rgba(82,227,194,.25);}
+.btn-ghost{background:transparent;}
+.btn svg{width:15px;height:15px;flex:none;}
+.btn.small{padding:6px 11px;font-size:12px;}
+#menuToggle{display:none;}
+
+/* ============ LAYOUT ============ */
+.shell{display:flex; align-items:flex-start; gap:20px; max-width:1180px; margin:0 auto; padding:22px 14px 90px;}
+.sidenav{
+  position:sticky; top:82px; flex:none; width:230px;
+  padding:16px 14px; display:flex; flex-direction:column; gap:3px;
+}
+.sidenav .navlabel{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--text-2); padding:4px 10px 8px;}
+.navitem{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px; border-radius:12px; text-decoration:none;
+  color:var(--text-1); font-size:13.5px; font-weight:600;
+  transition:background .15s ease, color .15s ease;
+}
+.navitem:hover{background:var(--glass-strong); color:var(--text-0);}
+.navitem.active{background:var(--glass-strong); color:var(--text-0);}
+.navdot{
+  width:9px;height:9px;border-radius:50%;flex:none;
+  background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25);
+  transition:background .2s ease, box-shadow .2s ease;
+}
+.navitem.done .navdot{background:var(--teal); border-color:var(--teal); box-shadow:0 0 8px rgba(82,227,194,.7);}
+.navline{width:1px; height:14px; background:var(--border-soft); margin-left:15px;}
+.sidenav .score{margin-top:10px; padding:12px 12px; border-radius:14px; background:var(--glass-strong); font-size:12px; color:var(--text-1);}
+.sidenav .score b{color:var(--gold); font-family:'JetBrains Mono',monospace; font-size:14px;}
+
+main{flex:1; min-width:0; display:flex; flex-direction:column; gap:18px;}
+
+/* ============ HERO ============ */
+.hero{padding:26px 28px;}
+.hero .eyebrow{font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); font-weight:700; margin:0 0 8px;}
+.hero h1{margin:0 0 8px; font-size:26px; font-weight:800; letter-spacing:-.01em;}
+.hero p{margin:0; color:var(--text-1); font-size:14px; max-width:62ch;}
+
+/* intro accordion */
+details.help{border-top:1px solid var(--border-soft); margin-top:16px; padding-top:14px;}
+details.help summary{
+  cursor:pointer; list-style:none; display:flex; align-items:center; gap:9px;
+  font-weight:700; font-size:13.5px; color:var(--text-0);
+}
+details.help summary::-webkit-details-marker{display:none;}
+details.help summary .chev{transition:transform .2s ease; color:var(--text-1); flex:none;}
+details.help[open] summary .chev{transform:rotate(90deg);}
+.help-body{padding:12px 2px 2px; color:var(--text-1); font-size:13.5px;}
+.help-body h4{color:var(--text-0); font-size:13px; margin:14px 0 6px;}
+.help-body ul{margin:6px 0; padding-left:18px;}
+.help-body li{margin:4px 0;}
+.help-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px;}
+.help-chip{background:var(--glass-strong); border:1px solid var(--border-soft); border-radius:12px; padding:10px 12px; font-size:12.5px;}
+.help-chip b{display:block; color:var(--teal); font-size:12px; margin-bottom:3px;}
+
+/* ============ SECTION CARD ============ */
+.sec{padding:26px 28px; scroll-margin-top:90px;}
+.sec-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:6px;}
+.sec-num{
+  flex:none; width:42px; height:42px; border-radius:13px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px;
+  background:var(--glass-strong); border:1px solid var(--border-soft); color:var(--teal);
+}
+.sec-head h2{margin:0; font-size:17.5px; font-weight:800;}
+.sec-head .sub{color:var(--text-1); font-size:13px; margin-top:3px;}
+.sec-note{
+  margin:14px 0 18px; padding:12px 14px; border-radius:13px;
+  background:rgba(155,135,245,.08); border:1px solid rgba(155,135,245,.22);
+  color:var(--text-1); font-size:12.8px; white-space:pre-line;
+}
+.sec-note.gold{background:rgba(240,184,104,.08); border-color:rgba(240,184,104,.24);}
+.sec-note b{color:var(--text-0);}
+
+/* ============ FIELDS ============ */
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.field.full{grid-column:1 / -1;}
+.field label{font-size:12.5px; font-weight:600; color:var(--text-1); display:flex; gap:5px;}
+.field label .req{color:var(--rose);}
+.field .hint{font-size:11.5px; color:var(--text-2); margin-top:-2px;}
+input[type=text], input[type=date], input[type=tel], textarea{
+  width:100%; font:inherit; color:var(--text-0);
+  background:rgba(255,255,255,.045);
+  border:1px solid var(--border-soft);
+  border-radius:12px; padding:10px 13px;
+  transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+input::placeholder, textarea::placeholder{color:var(--text-2);}
+input:focus, textarea:focus{
+  outline:none; border-color:var(--teal); background:rgba(255,255,255,.07);
+  box-shadow:0 0 0 3px rgba(82,227,194,.14);
+}
+textarea{resize:vertical; min-height:64px; line-height:1.5;}
+input[type=date]{color-scheme:dark;}
+
+.period-row{display:flex; align-items:center; gap:10px;}
+.period-row span{color:var(--text-2); font-size:12px;}
+
+/* ============ ACTIVITY CATEGORY ============ */
+.cat{border:1px solid var(--border-soft); border-radius:16px; padding:16px 16px 12px; margin-bottom:14px; background:rgba(255,255,255,.025);}
+
+/* balance widget */
+.balance-box{border:1px solid var(--border-soft); border-radius:16px; padding:16px 18px; margin-bottom:16px; background:rgba(255,255,255,.03);}
+.balance-head{display:flex; justify-content:space-between; align-items:baseline; font-size:13px; font-weight:700; margin-bottom:10px;}
+.balance-head .hint{font-weight:500; font-size:11.5px; color:var(--text-2);}
+.balance-bar{display:flex; height:12px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.06); border:1px solid var(--border-soft);}
+.balance-bar .seg{height:100%; transition:width .35s ease; min-width:0;}
+.seg.practice, .dot.practice{background:var(--teal);}
+.seg.people, .dot.people{background:var(--violet);}
+.seg.theory, .dot.theory{background:var(--gold);}
+.balance-legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:10px; font-size:12px; color:var(--text-1);}
+.balance-legend span{display:flex; align-items:center; gap:6px;}
+.balance-legend b{color:var(--text-0); font-family:'JetBrains Mono',monospace; font-size:12px;}
+.balance-legend .target{color:var(--text-2); font-size:11px;}
+.dot{width:9px; height:9px; border-radius:50%; flex:none;}
+.balance-msg{margin-top:10px; font-size:12.5px; color:var(--text-1); line-height:1.5;}
+.balance-msg.ok{color:var(--teal);}
+.balance-msg .warn-item{display:block; margin-top:3px;}
+
+/* category status badge */
+.cat-status{font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px; letter-spacing:.02em;}
+.cat-status.low{background:rgba(255,255,255,.08); color:var(--text-2);}
+.cat-status.ok{background:rgba(82,227,194,.12); color:var(--teal);}
+.cat-status.high{background:rgba(240,184,104,.14); color:var(--gold);}
+.cat-bucket{font-size:10px; color:var(--text-2); text-transform:uppercase; letter-spacing:.04em; margin-left:6px;}
+
+.cat-head{display:flex; align-items:center; gap:11px; margin-bottom:4px;}
+.cat-tag{
+  flex:none; width:34px; height:34px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
+  background:var(--glass-strong); color:var(--violet); border:1px solid var(--border-soft);
+}
+.cat-head h3{margin:0; font-size:14.5px; font-weight:700;}
+.cat-head .cnt{margin-left:auto; font-size:11.5px; color:var(--text-2); font-family:'JetBrains Mono',monospace;}
+.cat-hint{font-size:12px; color:var(--text-1); margin:6px 0 12px 45px; max-width:70ch;}
+
+.row-table{display:flex; flex-direction:column; gap:8px;}
+.arow{display:grid; grid-template-columns:1fr 150px 30px; gap:8px; align-items:center;}
+.arow input[type=text]{padding:8px 11px; font-size:13.5px;}
+.arow .done-box{
+  width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border-soft); background:rgba(255,255,255,.03); cursor:pointer;
+}
+.arow input[type=checkbox]{width:16px; height:16px; accent-color:var(--teal); cursor:pointer;}
+.cat-add{margin:10px 0 2px 45px;}
+
+/* ============ FOOTER ACTIONS ============ */
+.finish{padding:24px 28px; display:flex; flex-wrap:wrap; gap:12px; align-items:center;}
+.finish p{margin:0; color:var(--text-1); font-size:12.8px; flex:1; min-width:220px;}
+
+/* toast */
+#toast{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px);
+  padding:11px 18px; border-radius:999px; font-size:13px; font-weight:600;
+  opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:100;
+}
+#toast.show{opacity:1; transform:translate(-50%,0);}
+
+/* ============ PRINT SHEET (hidden on screen) ============ */
+#printSheet{display:none;}
+
+@media (max-width:980px){
+  .shell{flex-direction:column;}
+  .sidenav{position:static; width:100%; flex-direction:row; overflow-x:auto; gap:8px; padding:10px; -webkit-overflow-scrolling:touch;}
+  .sidenav .navlabel, .sidenav .score, .navline{display:none;}
+  .navitem{flex:none;}
+  .grid{grid-template-columns:1fr;}
+}
+@media (max-width:680px){
+  .topbar{flex-wrap:wrap;}
+  .topbar .btns{width:100%; order:3; justify-content:flex-start;}
+  .arow{grid-template-columns:1fr 110px 30px;}
+  .hero h1{font-size:21px;}
+  .help-grid{grid-template-columns:1fr;}
+}
+
+/* ============ PRINT STYLES ============ */
+@media print{
+  @page{ size:A4; margin:10mm 12mm; }
+  html,body{background:#fff !important; color:#111 !important; font-family:'Inter',Arial,sans-serif;}
+  .ambient, .topbar, .sidenav, #toast, .shell > main > .glass{display:none !important;}
+  #printSheet{display:block !important;}
+  #printSheet *{box-sizing:border-box;}
+  .p-title{font-family:'Manrope',Arial,sans-serif; font-size:19px; font-weight:800; margin:0 0 2mm; letter-spacing:.02em;}
+  .p-sub{font-size:10.5px; color:#555; margin:0 0 6mm;}
+  .p-section{margin:5mm 0; page-break-inside:avoid;}
+  .p-section h2{
+    font-family:'Manrope',Arial,sans-serif; font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+    margin:0 0 2.5mm; padding-bottom:1.5mm; border-bottom:1px solid #ccc; color:#111;
+  }
+  .p-kv{width:100%; border-collapse:collapse; font-size:10.5px;}
+  .p-kv td{padding:1.6mm 2mm; vertical-align:top; border-bottom:1px solid #eee;}
+  .p-kv td.k{width:38mm; color:#666; font-weight:600;}
+  .p-text{font-size:10.5px; white-space:pre-wrap; line-height:1.5; padding:1mm 0;}
+  table.p-acts{width:100%; border-collapse:collapse; font-size:9.6px; margin-top:1mm;}
+  table.p-acts thead{display:table-header-group;}
+  table.p-acts th{
+    text-align:left; font-weight:700; font-size:8.7px; text-transform:uppercase; letter-spacing:.03em;
+    color:#555; border-bottom:1px solid #999; padding:1.4mm 2mm;
+  }
+  table.p-acts td{padding:1.4mm 2mm; border-bottom:1px solid #eee; vertical-align:top;}
+  table.p-acts tr{page-break-inside:avoid;}
+  table.p-acts td.cat{color:#777; white-space:nowrap;}
+  table.p-acts td.done{text-align:center; width:9mm;}
+  .p-empty{color:#999; font-style:italic; font-size:10px;}
+  .p-sign-grid{display:flex; gap:14mm; margin-top:4mm;}
+  .p-sign{flex:1;}
+  .p-sign .line{border-bottom:1px solid #333; height:9mm; margin-bottom:1.5mm;}
+  .p-sign .lbl{font-size:9px; color:#666;}
+  .p-foot{margin-top:6mm; font-size:8.5px; color:#999; text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><span></span><span></span><span></span></div>
+
+<!-- ============ TOPBAR ============ -->
+<header class="topbar glass">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="ipMarkBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#52e3c2"/>
+          <stop offset="55%" stop-color="#9b87f5"/>
+          <stop offset="100%" stop-color="#f6cd90"/>
+        </linearGradient>
+        <linearGradient id="ipMarkGloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".5"/>
+          <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+        <radialGradient id="ipMarkSheen" cx="26%" cy="16%" r="80%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".65"/>
+          <stop offset="45%" stop-color="#ffffff" stop-opacity=".1"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="ipDiscFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".98"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity=".8"/>
+        </linearGradient>
+        <linearGradient id="ipBars" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#2fae94"/>
+          <stop offset="100%" stop-color="#8a72e8"/>
+        </linearGradient>
+        <radialGradient id="ipDot" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fce4bb"/>
+          <stop offset="100%" stop-color="#e8a555"/>
+        </radialGradient>
+        <filter id="ipBadgeDrop" x="-60%" y="-60%" width="220%" height="220%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#03150f" flood-opacity=".38"/>
+        </filter>
+        <filter id="ipDiscDrop" x="-80%" y="-80%" width="260%" height="260%">
+          <feDropShadow dx="0" dy="1.1" stdDeviation="1" flood-color="#03150f" flood-opacity=".28"/>
+        </filter>
+        <filter id="ipBarsDrop" x="-80%" y="-80%" width="260%" height="260%">
+          <feDropShadow dx="0" dy=".6" stdDeviation=".5" flood-color="#1a1030" flood-opacity=".3"/>
+        </filter>
+      </defs>
+
+      <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#ipMarkBg)" filter="url(#ipBadgeDrop)"/>
+      <rect x="1" y="1" width="32" height="14" rx="10" fill="url(#ipMarkGloss)"/>
+      <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#ipMarkSheen)"/>
+      <rect x="1.5" y="1.5" width="31" height="31" rx="9.5" fill="none" stroke="#ffffff" stroke-opacity=".32" stroke-width=".8"/>
+
+      <circle cx="17" cy="17.5" r="8.4" fill="url(#ipDiscFill)" filter="url(#ipDiscDrop)"/>
+      <path d="M9.7 14.4a8.4 8.4 0 0 1 12.3-6.3" fill="none" stroke="#ffffff" stroke-opacity=".9" stroke-width="1" stroke-linecap="round"/>
+
+      <g filter="url(#ipBarsDrop)">
+        <rect x="11.6" y="18.4" width="2.6" height="4.6" rx="1.1" fill="url(#ipBars)"/>
+        <rect x="15.2" y="15.2" width="2.6" height="7.8" rx="1.1" fill="url(#ipBars)"/>
+        <rect x="18.8" y="11.6" width="2.6" height="11.4" rx="1.1" fill="url(#ipBars)"/>
+      </g>
+      <circle cx="20.1" cy="9.9" r="1.9" fill="url(#ipDot)"/>
+      <circle cx="19.5" cy="9.2" r=".55" fill="#ffffff" fill-opacity=".85"/>
+    </svg>
+    <div class="txt">
+      <b>Индивидуальный план развития</b>
+      <small>интерактивная форма ИПР</small>
+    </div>
+  </div>
+
+  <div class="ring-wrap">
+    <svg class="ring" viewBox="0 0 40 40">
+      <defs>
+        <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#52e3c2"/>
+          <stop offset="100%" stop-color="#9b87f5"/>
+        </linearGradient>
+      </defs>
+      <circle class="track" cx="20" cy="20" r="16"/>
+      <circle class="fill" id="ringFill" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/>
+    </svg>
+    <div class="ring-label"><b id="pct">0%</b><br>заполнено</div>
+  </div>
+
+  <div class="btns">
+    <button class="btn btn-ghost small" id="btnLoad" title="Загрузить черновик из файла">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Черновик
+    </button>
+    <input type="file" id="fileInput" accept="application/json" style="display:none">
+    <button class="btn btn-ghost small" id="btnSaveDraft" title="Скачать черновик (JSON)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 12l-4-4m4 4l4-4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg>
+      Сохранить
+    </button>
+    <button class="btn" id="btnPrint" title="Печатная форма PDF, А4">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      Печать / PDF
+    </button>
+    <button class="btn btn-primary" id="btnExcel" title="Выгрузить в Excel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13l3 3-3 3M15 13l-3 3 3 3" stroke="none" fill="none"/></svg>
+      Excel
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ============ SIDE NAV ============ -->
+  <nav class="sidenav glass" id="sidenav">
+    <div class="navlabel">Разделы</div>
+    <a class="navitem" data-target="s1" href="#s1"><span class="navdot"></span>1 · Персональные данные</a>
+    <a class="navitem" data-target="s2" href="#s2"><span class="navdot"></span>2 · Обязанности</a>
+    <a class="navitem" data-target="s3" href="#s3"><span class="navdot"></span>3 · Компетенция</a>
+    <a class="navitem" data-target="s4" href="#s4"><span class="navdot"></span>4 · Ожидаемый результат</a>
+    <a class="navitem" data-target="s5" href="#s5"><span class="navdot"></span>5 · Развивающие действия</a>
+    <div class="score">Выбрано активностей<br><b id="scoreLabel">0 / 24</b></div>
+  </nav>
+
+  <main>
+
+    <!-- ============ HERO / INSTRUCTIONS ============ -->
+    <section class="hero glass">
+      <p class="eyebrow">Форма для заполнения</p>
+      <h1>ИНДИВИДУАЛЬНЫЙ ПЛАН РАЗВИТИЯ</h1>
+      <p>Заполните пять разделов ниже — форма сохраняет структуру корпоративного шаблона ИПР. В конце можно выгрузить данные в Excel или сформировать печатную форму для подписи (А4, узкие поля).</p>
+
+      <details class="help">
+        <summary><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg> Памятка: как правильно составить ИПР</summary>
+        <div class="help-body">
+          <h4>Логика документа</h4>
+          <p>Обязанности (раздел 2) → выбранная компетенция и обоснование (раздел 3) → измеримая цель развития (раздел 4) → конкретные развивающие действия со сроками (раздел 5). Каждый следующий раздел должен логически вытекать из предыдущего.</p>
+          <h4>Цель по SMART</h4>
+          <ul>
+            <li><b style="color:#eef1f8">Конкретность</b> — что именно будет сделано, без общих формулировок вроде «стать лучше».</li>
+            <li><b style="color:#eef1f8">Измеримость</b> — числовой или чётко проверяемый критерий.</li>
+            <li><b style="color:#eef1f8">Достижимость и срок</b> — реалистично в рамках периода ИПР, с конкретной датой.</li>
+            <li>Формулируйте цель в совершенном виде — «развит», «внедрено», «достигнуто» — так легче отследить факт достижения.</li>
+          </ul>
+          <h4>Баланс развивающих действий — принцип 70/20/10</h4>
+          <p>Распространённый ориентир в развитии персонала: около 70% роста даёт практика на рабочем месте, 20% — обучение через наблюдение и обратную связь от других, 10% — формальное обучение (курсы, тренинги). Важно: сама пропорция родилась из опроса руководителей в 1980-х и не имеет строгого научного подтверждения — относитесь к ней как к ориентиру, а не жёсткой формуле. Но общий принцип бесспорен: не сводите весь раздел 5 только к книгам и тренингам — добавьте практические задачи и наблюдение за коллегами.</p>
+          <div class="help-grid">
+            <div class="help-chip"><b>~70%</b>Практика — задачи, проекты, временное исполнение обязанностей</div>
+            <div class="help-chip"><b>~20%</b>Люди — наставник, коллеги, обратная связь</div>
+            <div class="help-chip"><b>~10%</b>Теория — книги, курсы, тренинги</div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ SECTION 1 ============ -->
+    <section class="sec glass" id="s1">
+      <div class="sec-head">
+        <div class="sec-num">01</div>
+        <div><h2>Персональные данные</h2><div class="sub">Основная информация о сотруднике и периоде действия плана</div></div>
+      </div>
+
+      <div class="grid" style="margin-top:18px;">
+        <div class="field full">
+          <label>ФИО <span class="req">*</span></label>
+          <input type="text" id="fio" data-req="1" placeholder="Иванов Иван Иванович">
+        </div>
+        <div class="field">
+          <label>Должность <span class="req">*</span></label>
+          <input type="text" id="position" data-req="1" placeholder="Специалист отдела продаж">
+        </div>
+        <div class="field">
+          <label>Подразделение <span class="req">*</span></label>
+          <input type="text" id="department" data-req="1" placeholder="Отдел продаж">
+        </div>
+        <div class="field">
+          <label>Дата рождения</label>
+          <input type="date" id="birthdate">
+        </div>
+        <div class="field">
+          <label>Контактный телефон и e-mail</label>
+          <input type="text" id="contact" placeholder="+7 900 000-00-00, name@company.ru">
+        </div>
+        <div class="field full">
+          <label>Период выполнения ИПР <span class="req">*</span></label>
+          <div class="period-row">
+            <input type="date" id="periodFrom" data-req="1" style="max-width:180px">
+            <span>по</span>
+            <input type="date" id="periodTo" data-req="1" style="max-width:180px">
+          </div>
+        </div>
+        <div class="field">
+          <label>Дата промежуточной сверки</label>
+          <input type="date" id="checkpointDate">
+          <div class="hint">ИПР — «живой» документ: план без промежуточного пересмотра обычно теряет актуальность. Рекомендуемая периодичность — раз в квартал.</div>
+        </div>
+        <div class="field">
+          <label>Дата подписания</label>
+          <input type="date" id="signDate">
+        </div>
+        <div class="field">
+          <label>Подпись сотрудника</label>
+          <input type="text" id="employeeSign" placeholder="ФИО (для печатной формы)">
+          <div class="hint">На печатной форме под полем — место для собственноручной подписи.</div>
+        </div>
+        <div class="field">
+          <label>Подпись наставника</label>
+          <input type="text" id="mentorSign" placeholder="ФИО наставника">
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2 ============ -->
+    <section class="sec glass" id="s2">
+      <div class="sec-head">
+        <div class="sec-num">02</div>
+        <div><h2>Ключевые функциональные обязанности</h2><div class="sub">Два–три основных процесса, реализуемых на рабочем месте</div></div>
+      </div>
+      <div class="sec-note">В данном разделе необходимо указать ключевые функциональные обязанности (два-три основных процесса, которые реализуются на рабочем месте).</div>
+      <div class="field full">
+        <label>Обязанности</label>
+        <textarea id="duties" style="min-height:100px" placeholder="1. …&#10;2. …&#10;3. …"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3 ============ -->
+    <section class="sec glass" id="s3">
+      <div class="sec-head">
+        <div class="sec-num">03</div>
+        <div><h2>Компетенция для развития</h2><div class="sub">Что именно планируется развивать в текущем периоде</div></div>
+      </div>
+      <div class="sec-note">В данном разделе необходимо указать запланированную к развитию компетенцию, умение, знание или навык.</div>
+      <div class="field full">
+        <label>Название компетенции <span class="req">*</span></label>
+        <input type="text" id="competencyName" data-req="1" placeholder="Например: навык проведения переговоров">
+      </div>
+      <div class="field full">
+        <label>Обоснование выбора</label>
+        <textarea id="competencyRationale" placeholder="Почему важно развивать именно эту компетенцию: связь с обязанностями из раздела 2, обратной связью или целями подразделения"></textarea>
+        <div class="hint">Свяжите выбор с обязанностями из раздела 2 — это делает план обоснованным, а не формальным.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4 ============ -->
+    <section class="sec glass" id="s4">
+      <div class="sec-head">
+        <div class="sec-num">04</div>
+        <div><h2>Ожидаемый результат</h2><div class="sub">Измеримая цель развития на период плана</div></div>
+      </div>
+      <div class="sec-note">Сформулируйте цель развития, раскрыв в ней ответы на вопросы:
+— Что именно вы планируете сделать?
+— К какому сроку необходимо это сделать?
+— Как вы узнаете, что цель достигнута?
+Критерии достижения цели должны быть конкретными и измеримыми.</div>
+      <div class="sec-note gold"><b>Пример:</b> В срок до 17.01.2026 г. развить навык быстрого освоения и применения на практике новых знаний, при котором основные цели и задачи исполняются вовремя и на 100% (в настоящее время показатель 90%).</div>
+      <div class="field full">
+        <label>Цель развития <span class="req">*</span></label>
+        <textarea id="goal" data-req="1" style="min-height:90px" placeholder="В срок до … развить/внедрить/освоить …, критерий достижения — …"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5 ============ -->
+    <section class="sec glass" id="s5">
+      <div class="sec-head">
+        <div class="sec-num">05</div>
+        <div><h2>Развивающие действия</h2><div class="sub">Источники, конкретные действия, сроки — по категориям развития</div></div>
+      </div>
+      <div class="sec-note">Отразите конкретные источники информации, ваши действия и сроки завершения активности. Рекомендуемый алгоритм развития компетенции: <b>теория (книги) → тренинги → наблюдение / рефлексия → самостоятельная практика / проекты.</b> Периодически возвращайтесь к плану и отмечайте статус выполнения активностей — отметка «выполнено» справа от каждой строки.</div>
+
+      <div class="balance-box">
+        <div class="balance-head">
+          <span>Баланс 70/20/10<span class="hint" style="margin-left:6px;">— ориентир, не жёсткая норма</span></span>
+          <span id="balanceTotal" class="mono" style="color:var(--text-2); font-size:11.5px;"></span>
+        </div>
+        <div class="balance-bar" id="balanceBar">
+          <div class="seg practice" id="segPractice"></div><div class="seg people" id="segPeople"></div><div class="seg theory" id="segTheory"></div>
+        </div>
+        <div class="balance-legend">
+          <span><i class="dot practice"></i>Практика <b id="pctPractice">0%</b><span class="target">ориентир ~70%</span></span>
+          <span><i class="dot people"></i>Люди <b id="pctPeople">0%</b><span class="target">ориентир ~20%</span></span>
+          <span><i class="dot theory"></i>Теория <b id="pctTheory">0%</b><span class="target">ориентир ~10%</span></span>
+        </div>
+        <div id="balanceMsg" class="balance-msg"></div>
+      </div>
+
+      <div id="catContainer"></div>
+    </section>
+
+    <!-- ============ FINISH ============ -->
+    <section class="finish glass">
+      <p>План готов? Выгрузите данные в Excel для архива или сформируйте печатную форму А4 для подписи сотрудником и наставником.</p>
+      <button class="btn btn-ghost" id="btnPrint2">Печать / PDF</button>
+      <button class="btn btn-primary" id="btnExcel2">Скачать Excel</button>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<!-- ============ PRINT SHEET ============ -->
+<div id="printSheet">
+  <div class="p-title">Индивидуальный план развития</div>
+  <div class="p-sub" id="pSub"></div>
+
+  <div class="p-section">
+    <h2>Раздел 1 — Персональные данные</h2>
+    <table class="p-kv" id="pPersonal"></table>
+  </div>
+
+  <div class="p-section">
+    <h2>Раздел 2 — Ключевые функциональные обязанности</h2>
+    <div class="p-text" id="pDuties"></div>
+  </div>
+
+  <div class="p-section">
+    <h2>Раздел 3 — Компетенция для развития</h2>
+    <table class="p-kv" id="pCompetency"></table>
+  </div>
+
+  <div class="p-section">
+    <h2>Раздел 4 — Ожидаемый результат</h2>
+    <div class="p-text" id="pGoal"></div>
+  </div>
+
+  <div class="p-section">
+    <h2>Раздел 5 — Развивающие действия</h2>
+    <table class="p-acts">
+      <thead><tr><th>Метод развития</th><th>Развивающее действие</th><th>Срок</th><th class="done">Вып.</th></tr></thead>
+      <tbody id="pActs"></tbody>
+    </table>
+  </div>
+
+  <div class="p-sign-grid">
+    <div class="p-sign"><div class="line"></div><div class="lbl" id="pEmpSign">Подпись сотрудника</div></div>
+    <div class="p-sign"><div class="line"></div><div class="lbl" id="pMentSign">Подпись наставника</div></div>
+    <div class="p-sign" style="max-width:40mm;"><div class="line"></div><div class="lbl" id="pDate">Дата</div></div>
+  </div>
+  <div class="p-foot">Индивидуальный план развития</div>
+</div>
+
+<script>
+/* ============ CONFIG ============ */
+var CATEGORIES = [
+  {key:'books', tag:'КН', label:'Книги', rowsDefault:5, rowsMax:5, bucket:'theory',
+    hint:'Выберите не более 5 книг для самостоятельного прочтения — «теория» в алгоритме развития.'},
+  {key:'workplace', tag:'РМ', label:'Развитие на рабочем месте', rowsDefault:5, rowsMax:5, bucket:'practice',
+    hint:'Конкретные поручения и задания из ежедневной работы, которые способствуют развитию навыка. Не более 5 мероприятий.'},
+  {key:'others', tag:'ОО', label:'Обучение на опыте других', rowsDefault:2, rowsMax:3, bucket:'people',
+    hint:'Наблюдение за коллегой/руководителем с высоким уровнем развития навыка и совместное обсуждение опыта. Не более 3 мероприятий.'},
+  {key:'trainings', tag:'ТС', label:'Тренинги и семинары', rowsDefault:2, rowsMax:2, bucket:'theory',
+    hint:'Краткосрочное интенсивное обучение по выбранному навыку, в т.ч. дистанционное. Не более 2 мероприятий. Итоговое решение о направлении на обучение принимает руководитель совместно с HR.'},
+  {key:'acting', tag:'ИО', label:'Исполнение обязанностей', rowsDefault:3, rowsMax:3, bucket:'practice',
+    hint:'Временное назначение на должность или исполнение обязанностей в отсутствие руководителя, направленное на развитие целевых компетенций. Не более 3 мероприятий.'},
+  {key:'projects', tag:'РП', label:'Реализованные проекты', rowsDefault:1, rowsMax:3, bucket:'practice',
+    hint:'Участие в общекорпоративном или локальном проекте, требующем более высокого уровня развития навыка. Не более 3 мероприятий.'},
+  {key:'feedback', tag:'ОС', label:'Обратная связь', rowsDefault:2, rowsMax:3, bucket:'people',
+    hint:'Обсуждение своей работы с коллегами, подчинёнными, руководителем или коучем — с точки зрения прогресса в развитии навыка. Не более 3 мероприятий.'},
+  {key:'additional', tag:'ДП', label:'Дополнительные действия', rowsDefault:4, rowsMax:8, bucket:null,
+    hint:'Дополнительные развивающие действия, рекомендованные наставником. Заполняется при необходимости. Не входят в расчёт баланса 70/20/10.'}
+];
+var HARD_CAP = 15; /* upper safety limit per category — the "recommended" number is only a soft guideline now */
+var BUCKET_LABEL = {practice:'Практика', people:'Люди', theory:'Теория'};
+
+var rowCounts = {};
+CATEGORIES.forEach(function(c){ rowCounts[c.key] = c.rowsDefault; });
+
+/* ============ BUILD ACTIVITY ROWS ============ */
+var catContainer = document.getElementById('catContainer');
+
+function buildCategory(cat){
+  var wrap = document.createElement('div');
+  wrap.className = 'cat';
+  wrap.id = 'cat_' + cat.key;
+  var bucketTag = cat.bucket ? '<span class="cat-bucket">' + BUCKET_LABEL[cat.bucket] + '</span>' : '';
+  wrap.innerHTML =
+    '<div class="cat-head">' +
+      '<div class="cat-tag">' + cat.tag + '</div>' +
+      '<h3>' + cat.label + bucketTag + '</h3>' +
+      '<span class="cat-status" id="status_' + cat.key + '"></span>' +
+      '<div class="cnt" id="cnt_' + cat.key + '"></div>' +
+    '</div>' +
+    '<div class="cat-hint">' + cat.hint + '</div>' +
+    '<div class="row-table" id="rows_' + cat.key + '"></div>' +
+    '<button class="btn btn-ghost small cat-add" data-cat="' + cat.key + '">+ Добавить действие</button>';
+  catContainer.appendChild(wrap);
+  renderRows(cat.key);
+  updateCount(cat.key);
+}
+
+function renderRows(key){
+  var host = document.getElementById('rows_' + key);
+  var n = rowCounts[key];
+  var existing = host.children.length;
+  for (var i = existing; i < n; i++){
+    var row = document.createElement('div');
+    row.className = 'arow';
+    row.innerHTML =
+      '<input type="text" placeholder="Развивающее действие" data-role="action" data-cat="' + key + '" data-idx="' + i + '">' +
+      '<input type="text" placeholder="Срок" data-role="deadline" data-cat="' + key + '" data-idx="' + i + '">' +
+      '<div class="done-box" title="Выполнено"><input type="checkbox" data-role="done" data-cat="' + key + '" data-idx="' + i + '"></div>';
+    host.appendChild(row);
+  }
+}
+
+function updateCount(key){
+  var cat = CATEGORIES.find(function(c){return c.key===key;});
+  var filled = countFilledInCategory(key);
+  document.getElementById('cnt_' + key).textContent = filled + ' заполнено · рекомендовано до ' + cat.rowsMax;
+  var addBtn = document.querySelector('.cat-add[data-cat="' + key + '"]');
+  if (addBtn) addBtn.style.display = rowCounts[key] >= HARD_CAP ? 'none' : 'inline-flex';
+  var statusEl = document.getElementById('status_' + key);
+  if (statusEl){
+    if (filled === 0){ statusEl.textContent = 'пусто'; statusEl.className = 'cat-status low'; }
+    else if (filled > cat.rowsMax){ statusEl.textContent = 'многовато'; statusEl.className = 'cat-status high'; }
+    else { statusEl.textContent = 'ок'; statusEl.className = 'cat-status ok'; }
+  }
+}
+
+function countFilledInCategory(key){
+  var n = 0;
+  document.querySelectorAll('[data-role="action"][data-cat="' + key + '"]').forEach(function(el){ if (el.value.trim() !== '') n++; });
+  return n;
+}
+
+CATEGORIES.forEach(buildCategory);
+
+catContainer.addEventListener('click', function(e){
+  var btn = e.target.closest('.cat-add');
+  if (!btn) return;
+  var key = btn.getAttribute('data-cat');
+  if (rowCounts[key] < HARD_CAP){
+    rowCounts[key]++;
+    renderRows(key);
+    updateCount(key);
+    bindProgressListeners();
+  }
+});
+
+/* ============ REQUIRED FIELDS / PROGRESS ============ */
+var ringFill = document.getElementById('ringFill');
+var RING_LEN = 100.5;
+
+function computeProgress(){
+  var reqEls = document.querySelectorAll('[data-req="1"]');
+  var filled = 0;
+  reqEls.forEach(function(el){ if (el.value.trim() !== '') filled++; });
+  var pct = reqEls.length ? Math.round((filled / reqEls.length) * 100) : 0;
+  document.getElementById('pct').textContent = pct + '%';
+  ringFill.style.strokeDashoffset = RING_LEN - (RING_LEN * pct / 100);
+
+  // per-section completion for sidenav dots
+  var sectionMap = {
+    s1: ['fio','position','department','periodFrom','periodTo'],
+    s2: ['duties'],
+    s3: ['competencyName'],
+    s4: ['goal'],
+    s5: null
+  };
+  Object.keys(sectionMap).forEach(function(sid){
+    var ids = sectionMap[sid];
+    var done;
+    if (ids){
+      done = ids.every(function(id){ var el = document.getElementById(id); return el && el.value.trim() !== ''; });
+    } else {
+      done = countFilledActions() > 0;
+    }
+    var nav = document.querySelector('.navitem[data-target="' + sid + '"]');
+    if (nav) nav.classList.toggle('done', done);
+  });
+
+  // score
+  var filledActions = countFilledActions();
+  document.getElementById('scoreLabel').textContent = filledActions + ' · рекомендовано ~24';
+
+  CATEGORIES.forEach(function(cat){ updateCount(cat.key); });
+  computeBalance();
+}
+
+function computeBalance(){
+  var sums = {practice:0, people:0, theory:0};
+  CATEGORIES.forEach(function(cat){
+    if (!cat.bucket) return;
+    sums[cat.bucket] += countFilledInCategory(cat.key);
+  });
+  var total = sums.practice + sums.people + sums.theory;
+  var totalEl = document.getElementById('balanceTotal');
+  var msgEl = document.getElementById('balanceMsg');
+
+  if (total === 0){
+    document.getElementById('segPractice').style.width = '0%';
+    document.getElementById('segPeople').style.width = '0%';
+    document.getElementById('segTheory').style.width = '0%';
+    document.getElementById('pctPractice').textContent = '—';
+    document.getElementById('pctPeople').textContent = '—';
+    document.getElementById('pctTheory').textContent = '—';
+    totalEl.textContent = '';
+    msgEl.className = 'balance-msg';
+    msgEl.textContent = 'Добавьте хотя бы одно действие, чтобы увидеть баланс.';
+    return;
+  }
+
+  var pP = Math.round(sums.practice / total * 100);
+  var pO = Math.round(sums.people / total * 100);
+  var pT = 100 - pP - pO;
+
+  document.getElementById('segPractice').style.width = pP + '%';
+  document.getElementById('segPeople').style.width = pO + '%';
+  document.getElementById('segTheory').style.width = pT + '%';
+  document.getElementById('pctPractice').textContent = pP + '%';
+  document.getElementById('pctPeople').textContent = pO + '%';
+  document.getElementById('pctTheory').textContent = pT + '%';
+  totalEl.textContent = total + ' действий учтено (без «Дополнительных»)';
+
+  var warnings = [];
+  if (total < 3){
+    warnings.push('Пока мало данных для оценки баланса — добавьте ещё действий.');
+  } else {
+    if (pP < 50) warnings.push('Практики маловато (' + pP + '% при ориентире ~70%) — добавьте пункты в «Развитие на рабочем месте», «Исполнение обязанностей» или «Проекты».');
+    if (pP > 88) warnings.push('Почти всё держится на практике (' + pP + '%) — не забудьте про людей (наставник, обратная связь) и немного теории.');
+    if (pT > 30) warnings.push('Многовато теории (' + pT + '% при ориентире ~10%) — книги и тренинги стоит уравновесить практическими задачами.');
+    if (pO < 8) warnings.push('Почти нет пунктов с людьми (' + pO + '% при ориентире ~20%) — рассмотрите наблюдение за коллегой или обратную связь.');
+  }
+
+  if (warnings.length === 0){
+    msgEl.className = 'balance-msg ok';
+    msgEl.textContent = 'Баланс близок к ориентиру 70/20/10.';
+  } else {
+    msgEl.className = 'balance-msg';
+    msgEl.innerHTML = warnings.map(function(w){ return '<span class="warn-item">⚠ ' + w + '</span>'; }).join('');
+  }
+}
+
+function countFilledActions(){
+  var actionEls = document.querySelectorAll('[data-role="action"]');
+  var n = 0;
+  actionEls.forEach(function(el){ if (el.value.trim() !== '') n++; });
+  return n;
+}
+
+function bindProgressListeners(){
+  document.querySelectorAll('input, textarea').forEach(function(el){
+    el.removeEventListener('input', computeProgress);
+    el.addEventListener('input', computeProgress);
+  });
+}
+bindProgressListeners();
+computeProgress();
+
+/* active section highlight on scroll */
+var sections = ['s1','s2','s3','s4','s5'].map(function(id){ return document.getElementById(id); });
+var navItems = document.querySelectorAll('.navitem');
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if (entry.isIntersecting){
+      navItems.forEach(function(n){ n.style.color=''; });
+      var active = document.querySelector('.navitem[data-target="' + entry.target.id + '"]');
+      if (active) active.classList.add('active');
+      navItems.forEach(function(n){ if (n !== active) n.classList.remove('active'); });
+    }
+  });
+}, {rootMargin:'-40% 0px -50% 0px'});
+sections.forEach(function(s){ if (s) io.observe(s); });
+
+/* ============ TOAST ============ */
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'glass show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+/* ============ COLLECT DATA ============ */
+function collectData(){
+  var d = {
+    fio: val('fio'), position: val('position'), department: val('department'),
+    birthdate: val('birthdate'), contact: val('contact'),
+    periodFrom: val('periodFrom'), periodTo: val('periodTo'), checkpointDate: val('checkpointDate'), signDate: val('signDate'),
+    employeeSign: val('employeeSign'), mentorSign: val('mentorSign'),
+    duties: val('duties'),
+    competencyName: val('competencyName'), competencyRationale: val('competencyRationale'),
+    goal: val('goal'),
+    actions: {}
+  };
+  CATEGORIES.forEach(function(cat){
+    var list = [];
+    for (var i=0; i<rowCounts[cat.key]; i++){
+      var a = document.querySelector('[data-role="action"][data-cat="'+cat.key+'"][data-idx="'+i+'"]');
+      var dl = document.querySelector('[data-role="deadline"][data-cat="'+cat.key+'"][data-idx="'+i+'"]');
+      var dn = document.querySelector('[data-role="done"][data-cat="'+cat.key+'"][data-idx="'+i+'"]');
+      list.push({action: a?a.value:'', deadline: dl?dl.value:'', done: dn?dn.checked:false});
+    }
+    d.actions[cat.key] = list;
+  });
+  return d;
+}
+function val(id){ var el = document.getElementById(id); return el ? el.value : ''; }
+function setVal(id, v){ var el = document.getElementById(id); if (el && v !== undefined) el.value = v; }
+
+/* ============ LOAD DATA (draft) ============ */
+function applyData(d){
+  ['fio','position','department','birthdate','contact','periodFrom','periodTo','checkpointDate','signDate',
+   'employeeSign','mentorSign','duties','competencyName','competencyRationale','goal'].forEach(function(id){
+    setVal(id, d[id]);
+  });
+  if (d.actions){
+    CATEGORIES.forEach(function(cat){
+      var list = d.actions[cat.key];
+      if (!list) return;
+      rowCounts[cat.key] = Math.min(Math.max(list.length, cat.rowsDefault), HARD_CAP);
+      renderRows(cat.key);
+      updateCount(cat.key);
+      list.forEach(function(item, i){
+        if (i >= rowCounts[cat.key]) return;
+        var a = document.querySelector('[data-role="action"][data-cat="'+cat.key+'"][data-idx="'+i+'"]');
+        var dl = document.querySelector('[data-role="deadline"][data-cat="'+cat.key+'"][data-idx="'+i+'"]');
+        var dn = document.querySelector('[data-role="done"][data-cat="'+cat.key+'"][data-idx="'+i+'"]');
+        if (a) a.value = item.action || '';
+        if (dl) dl.value = item.deadline || '';
+        if (dn) dn.checked = !!item.done;
+      });
+    });
+  }
+  bindProgressListeners();
+  computeProgress();
+}
+
+/* ============ DRAFT SAVE / LOAD (file-based, no browser storage) ============ */
+document.getElementById('btnSaveDraft').addEventListener('click', function(){
+  var data = collectData();
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var name = (data.fio || 'ИПР').replace(/[^\wа-яА-ЯёЁ\- ]/g,'').trim() || 'ИПР';
+  a.href = url; a.download = 'Черновик_' + name + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Черновик сохранён в файл');
+});
+
+document.getElementById('btnLoad').addEventListener('click', function(){
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var data = JSON.parse(ev.target.result);
+      applyData(data);
+      toast('Черновик загружен');
+    } catch(err){
+      toast('Не удалось прочитать файл');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ============ EXCEL EXPORT ============ */
+function exportExcel(){
+  var d = collectData();
+  var rows = [];
+  rows.push(['ИНДИВИДУАЛЬНЫЙ ПЛАН РАЗВИТИЯ']);
+  rows.push([]);
+  rows.push(['РАЗДЕЛ 1 — ПЕРСОНАЛЬНЫЕ ДАННЫЕ']);
+  rows.push(['ФИО', d.fio]);
+  rows.push(['Должность', d.position]);
+  rows.push(['Подразделение', d.department]);
+  rows.push(['Дата рождения', d.birthdate]);
+  rows.push(['Контактный телефон и e-mail', d.contact]);
+  rows.push(['Период выполнения ИПР', (d.periodFrom||'') + '  —  ' + (d.periodTo||'')]);
+  rows.push(['Дата промежуточной сверки', d.checkpointDate]);
+  rows.push(['Дата подписания', d.signDate]);
+  rows.push(['Подпись сотрудника', d.employeeSign]);
+  rows.push(['Подпись наставника', d.mentorSign]);
+  rows.push([]);
+  rows.push(['РАЗДЕЛ 2 — КЛЮЧЕВЫЕ ФУНКЦИОНАЛЬНЫЕ ОБЯЗАННОСТИ']);
+  rows.push([d.duties]);
+  rows.push([]);
+  rows.push(['РАЗДЕЛ 3 — КОМПЕТЕНЦИЯ ДЛЯ РАЗВИТИЯ']);
+  rows.push(['Название компетенции', d.competencyName]);
+  rows.push(['Обоснование выбора', d.competencyRationale]);
+  rows.push([]);
+  rows.push(['РАЗДЕЛ 4 — ОЖИДАЕМЫЙ РЕЗУЛЬТАТ']);
+  rows.push([d.goal]);
+  rows.push([]);
+  rows.push(['РАЗДЕЛ 5 — РАЗВИВАЮЩИЕ ДЕЙСТВИЯ']);
+  rows.push(['Метод развития', 'Развивающее действие', 'Срок', 'Выполнено']);
+  var total = 0;
+  CATEGORIES.forEach(function(cat){
+    d.actions[cat.key].forEach(function(item){
+      if (item.action && item.action.trim() !== ''){
+        rows.push([cat.label, item.action, item.deadline, item.done ? 'да' : '']);
+        total++;
+      }
+    });
+  });
+  rows.push([]);
+  rows.push(['', '', 'Всего запланировано активностей:', total]);
+
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:32},{wch:52},{wch:16},{wch:12}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ИПР');
+  var name = (d.fio || 'ИПР').replace(/[^\wа-яА-ЯёЁ\- ]/g,'').trim() || 'ИПР';
+  XLSX.writeFile(wb, 'ИПР_' + name + '.xlsx');
+  toast('Файл Excel скачан');
+}
+document.getElementById('btnExcel').addEventListener('click', exportExcel);
+document.getElementById('btnExcel2').addEventListener('click', exportExcel);
+
+/* ============ PRINT ============ */
+function fmtDate(s){
+  if (!s) return '';
+  var p = s.split('-');
+  if (p.length !== 3) return s;
+  return p[2] + '.' + p[1] + '.' + p[0];
+}
+function kvRow(k, v){ return '<tr><td class="k">' + k + '</td><td>' + (v && v.trim() !== '' ? escapeHtml(v) : '<span class="p-empty">не указано</span>') + '</td></tr>'; }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+
+function preparePrint(){
+  var d = collectData();
+  document.getElementById('pSub').textContent =
+    'Период: ' + (fmtDate(d.periodFrom) || '—') + ' – ' + (fmtDate(d.periodTo) || '—') +
+    (d.department ? '   ·   ' + d.department : '');
+
+  document.getElementById('pPersonal').innerHTML =
+    kvRow('ФИО', d.fio) + kvRow('Должность', d.position) + kvRow('Подразделение', d.department) +
+    kvRow('Дата рождения', fmtDate(d.birthdate)) + kvRow('Контакты', d.contact) +
+    kvRow('Период ИПР', (fmtDate(d.periodFrom)||'—') + ' – ' + (fmtDate(d.periodTo)||'—')) +
+    kvRow('Промежуточная сверка', fmtDate(d.checkpointDate)) +
+    kvRow('Дата подписания', fmtDate(d.signDate));
+
+  document.getElementById('pDuties').textContent = d.duties && d.duties.trim() !== '' ? d.duties : 'Не указано';
+
+  document.getElementById('pCompetency').innerHTML =
+    kvRow('Название компетенции', d.competencyName) + kvRow('Обоснование выбора', d.competencyRationale);
+
+  document.getElementById('pGoal').textContent = d.goal && d.goal.trim() !== '' ? d.goal : 'Не указано';
+
+  var tbody = document.getElementById('pActs');
+  tbody.innerHTML = '';
+  var any = false;
+  CATEGORIES.forEach(function(cat){
+    d.actions[cat.key].forEach(function(item){
+      if (item.action && item.action.trim() !== ''){
+        any = true;
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td class="cat">' + escapeHtml(cat.label) + '</td>' +
+          '<td>' + escapeHtml(item.action) + '</td>' +
+          '<td>' + escapeHtml(item.deadline || '—') + '</td>' +
+          '<td class="done">' + (item.done ? '✓' : '') + '</td>';
+        tbody.appendChild(tr);
+      }
+    });
+  });
+  if (!any){
+    tbody.innerHTML = '<tr><td colspan="4" class="p-empty">Развивающие действия не заполнены</td></tr>';
+  }
+
+  document.getElementById('pEmpSign').textContent = 'Подпись сотрудника' + (d.employeeSign ? ' — ' + d.employeeSign : '');
+  document.getElementById('pMentSign').textContent = 'Подпись наставника' + (d.mentorSign ? ' — ' + d.mentorSign : '');
+  document.getElementById('pDate').textContent = 'Дата: ' + (fmtDate(d.signDate) || '_______________');
+}
+
+function doPrint(){
+  preparePrint();
+  setTimeout(function(){ window.print(); }, 60);
+}
+document.getElementById('btnPrint').addEventListener('click', doPrint);
+document.getElementById('btnPrint2').addEventListener('click', doPrint);
+window.addEventListener('beforeprint', preparePrint);
+</script>
+</body>
+</html>

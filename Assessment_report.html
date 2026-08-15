@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Анализ результатов оценки и формирование комплексных отчетов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg-0:#050b0c; --bg-1:#081413; --bg-2:#0a1a19;
+  --glass:rgba(255,255,255,.055); --glass-strong:rgba(255,255,255,.095); --glass-hover:rgba(255,255,255,.12);
+  --border:rgba(255,255,255,.14); --border-soft:rgba(255,255,255,.08);
+  --text-0:#eef4f3; --text-1:#a8bab7; --text-2:#69827e;
+  --teal:#4fd6c9; --teal-dim:#2f9c92; --gold:#f0b868; --rose:#ef7f9b; --sky:#7db4ff;
+  --r-lg:22px;
+  --shadow-glass:0 8px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; min-height:100vh;
+  background:
+    radial-gradient(1100px 700px at 15% -8%, rgba(79,214,201,.20), transparent 60%),
+    radial-gradient(900px 650px at 100% 8%, rgba(79,214,201,.14), transparent 55%),
+    radial-gradient(1200px 900px at 50% 115%, rgba(240,184,104,.08), transparent 60%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+  color:var(--text-0); font-family:'Inter',system-ui,sans-serif; font-size:15.5px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.display{font-family:'Manrope',sans-serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+::selection{background:rgba(79,214,201,.3);}
+a{color:var(--teal);}
+p{margin:0 0 10px;}
+
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.ambient span{position:absolute;border-radius:50%;filter:blur(95px);opacity:.45;animation:drift 28s ease-in-out infinite;}
+.ambient span:nth-child(1){width:440px;height:440px;background:var(--teal);top:-12%;left:-8%;}
+.ambient span:nth-child(2){width:380px;height:380px;background:var(--teal-dim);bottom:-16%;right:-6%;animation-delay:-10s;}
+.ambient span:nth-child(3){width:260px;height:260px;background:var(--gold);top:45%;left:62%;opacity:.16;animation-delay:-18s;}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(28px,-22px) scale(1.07);}}
+@media (prefers-reduced-motion:reduce){.ambient span{animation:none;}html{scroll-behavior:auto;}}
+
+/* reading progress */
+#progress{position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg, var(--teal), var(--gold)); z-index:60; width:0%; transition:width .1s linear;}
+
+.glass{background:var(--glass);border:1px solid var(--border);border-radius:var(--r-lg);
+  backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);box-shadow:var(--shadow-glass);}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;padding:12px 20px;margin:14px 14px 0;border-radius:18px;}
+.topbar .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0;}
+.brand .mark{width:36px;height:36px;flex:none;display:block;}
+.brand .txt b{display:block;font-size:13.5px;font-weight:700;white-space:nowrap;}
+.brand .txt small{color:var(--text-1);font-size:11.5px;}
+.topbar .btns{display:flex;gap:8px;flex:none;}
+.btn{appearance:none;border:1px solid var(--border);cursor:pointer;padding:9px 15px;border-radius:999px;font:inherit;font-weight:600;font-size:13px;
+  color:var(--text-0);background:var(--glass-strong);display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  transition:transform .15s ease, background .15s ease;}
+.btn:hover{background:var(--glass-hover);transform:translateY(-1px);}
+.btn svg{width:15px;height:15px;flex:none;}
+
+/* layout */
+.shell{display:flex;align-items:flex-start;gap:20px;max-width:1180px;margin:0 auto;padding:0 14px 90px;}
+.sidenav{position:sticky;top:82px;flex:none;width:246px;padding:16px 14px;display:flex;flex-direction:column;gap:2px;margin-top:18px;}
+.sidenav .navlabel{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-2);padding:4px 10px 8px;}
+.navitem{display:flex;align-items:baseline;gap:9px;padding:8px 10px;border-radius:11px;text-decoration:none;color:var(--text-1);font-size:12.8px;font-weight:600;transition:background .15s ease,color .15s ease;}
+.navitem:hover{background:var(--glass-strong);color:var(--text-0);}
+.navitem.active{background:var(--glass-strong);color:var(--teal);}
+.navitem .ni-num{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-2);flex:none;}
+
+main{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px;margin-top:18px;}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding:64px 40px;text-align:center;border-radius:28px;
+  background:radial-gradient(900px 500px at 50% -10%, rgba(79,214,201,.35), transparent 60%), linear-gradient(160deg,#04100f,#081b19 60%,#04100f);
+  border:1px solid var(--border);}
+.hero .orb{position:absolute;border-radius:50%;filter:blur(2px);opacity:.85;}
+.hero .orb1{width:130px;height:130px;background:radial-gradient(circle at 35% 30%,#eafffb,var(--teal) 60%,transparent 100%);top:18%;left:8%;}
+.hero .orb2{width:70px;height:70px;background:radial-gradient(circle at 35% 30%,#eafffb,var(--teal-dim) 60%,transparent 100%);bottom:14%;right:12%;opacity:.6;}
+.hero .ring{position:absolute;border:1px solid rgba(255,255,255,.14);border-radius:50%;width:520px;height:520px;top:50%;left:50%;transform:translate(-50%,-50%);}
+.hero-inner{position:relative;z-index:2;}
+.hero .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700;margin:0 0 14px;}
+.hero h1{margin:0 auto 14px;font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.01em;max-width:16ch;line-height:1.15;}
+.hero p{color:var(--text-1);font-size:14.5px;max-width:52ch;margin:0 auto;}
+.hero .year{margin-top:22px;font-family:'JetBrains Mono',monospace;color:var(--text-2);font-size:12px;letter-spacing:.08em;}
+
+/* section shell */
+.sec{padding:30px 32px;scroll-margin-top:90px;}
+.sec-head{margin-bottom:6px;}
+.sec-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--teal);letter-spacing:.06em;margin:0 0 6px;}
+.sec-head h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.01em;}
+.sec-head .sub{color:var(--text-1);font-size:13.5px;margin-top:6px;max-width:70ch;}
+.sec-body{margin-top:20px;}
+.divider{height:1px;background:var(--border-soft);margin:26px 0;}
+
+h3.h{font-size:15px;font-weight:800;margin:0 0 10px;color:var(--text-0);}
+h4.h{font-size:13px;font-weight:700;margin:0 0 8px;color:var(--text-1);text-transform:uppercase;letter-spacing:.04em;}
+
+/* cards / chips */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.card{border:1px solid var(--border-soft);border-radius:16px;padding:16px 18px;background:rgba(255,255,255,.025);}
+.card.good{border-color:rgba(79,214,201,.3);background:rgba(79,214,201,.06);}
+.card.bad{border-color:rgba(239,127,155,.3);background:rgba(239,127,155,.06);}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--border-soft);font-size:12.5px;font-weight:600;color:var(--text-0);}
+.chip .n{font-family:'JetBrains Mono',monospace;color:var(--teal);}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;letter-spacing:.03em;}
+.tag.teal{background:rgba(79,214,201,.15);color:var(--teal);}
+.tag.gold{background:rgba(240,184,104,.15);color:var(--gold);}
+.tag.rose{background:rgba(239,127,155,.15);color:var(--rose);}
+.tag.sky{background:rgba(125,180,255,.15);color:var(--sky);}
+
+
+/* accordion */
+.acc{border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);}
+.acc + .acc{margin-top:8px;}
+.acc summary{cursor:pointer;list-style:none;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:700;color:var(--text-0);}
+.acc summary::-webkit-details-marker{display:none;}
+.acc summary::after{content:'+';flex:none;color:var(--teal);font-size:17px;font-weight:700;transition:transform .2s ease;}
+.acc[open] summary::after{transform:rotate(45deg);}
+.acc[open] summary{border-bottom:1px solid var(--border-soft);}
+.acc .acc-body{padding:12px 16px 14px;}
+.acc .acc-body ul.list{margin:0;}
+
+ul.list{margin:0;padding-left:0;list-style:none;}
+ul.list li{position:relative;padding:5px 0 5px 20px;font-size:13.5px;color:var(--text-1);}
+ul.list li::before{content:'';position:absolute;left:0;top:14px;width:6px;height:6px;border-radius:50%;background:var(--teal);}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:step;}
+ol.steps li{position:relative;padding:6px 0 6px 34px;font-size:13.5px;color:var(--text-1);counter-increment:step;}
+ol.steps li::before{content:counter(step);position:absolute;left:0;top:5px;width:22px;height:22px;border-radius:8px;
+  background:var(--glass-strong);border:1px solid var(--border-soft);color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:11px;
+  display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border-soft);}
+table.dtbl{width:100%;border-collapse:collapse;font-size:12.8px;min-width:520px;}
+table.dtbl th{text-align:left;padding:11px 14px;background:rgba(255,255,255,.05);color:var(--text-1);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border-soft);}
+table.dtbl td{padding:10px 14px;border-bottom:1px solid var(--border-soft);color:var(--text-0);vertical-align:top;}
+table.dtbl tr:last-child td{border-bottom:none;}
+table.dtbl td.dim{color:var(--text-1);}
+
+/* correlation strength scale */
+.corr-scale{display:flex;border-radius:12px;overflow:hidden;margin:14px 0 4px;border:1px solid var(--border-soft);}
+.corr-scale div{flex:1;padding:10px 6px;text-align:center;font-size:10.5px;font-weight:700;color:#08120f;}
+.corr-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+.corr-legend .li{font-size:11.8px;color:var(--text-1);}
+.corr-legend b{color:var(--text-0);}
+
+/* mini scatter */
+.scatter-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0;}
+.scatter-card{border:1px solid var(--border-soft);border-radius:14px;padding:14px;background:rgba(255,255,255,.02);text-align:center;}
+.scatter-card svg{width:100%;height:120px;}
+.scatter-card .r{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;margin-top:6px;}
+.scatter-card .lbl{font-size:12px;color:var(--text-1);margin-top:2px;}
+
+/* 9-box */
+.ninebox-wrap{display:flex;flex-direction:column;gap:14px;}
+.ninebox{width:100%;display:grid;grid-template-columns:34px repeat(3,1fr);grid-template-rows:repeat(3,72px) auto;gap:4px;align-items:stretch;}
+.nb-cell{border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--border-soft);display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:var(--text-1);padding:6px;font-weight:600;}
+.nb-cell.hi{background:rgba(79,214,201,.16);color:var(--teal);border-color:rgba(79,214,201,.3);}
+.nb-cell.mid{background:rgba(240,184,104,.14);color:var(--gold);border-color:rgba(240,184,104,.28);}
+.nb-cell.lo{background:rgba(239,127,155,.14);color:var(--rose);border-color:rgba(239,127,155,.28);}
+.nb-axis-y{grid-row:1/4;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:var(--text-2);font-weight:700;letter-spacing:.04em;}
+.nb-xlabels{grid-column:2/5;display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-2);padding-top:4px;}
+
+/* recreated visualizations (gauge / bars / heat) */
+.viz{padding:2px 2px 14px;}
+.viz-title{font-size:12.5px;font-weight:800;text-align:center;color:var(--text-0);margin-bottom:14px;}
+.gauge-row{display:flex;gap:10px;flex-wrap:wrap;}
+.gauge-item{flex:1;min-width:150px;text-align:center;border:1px solid var(--border-soft);border-radius:14px;padding:12px 10px 10px;}
+.gauge-label{font-size:11.5px;color:var(--text-1);margin-bottom:4px;}
+.gauge-svg{width:100%;height:auto;display:block;}
+.gauge-value{font-size:19px;font-weight:800;color:var(--text-0);margin-top:-30px;font-family:'JetBrains Mono',monospace;}
+.gauge-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--text-2);padding:0 6px;margin-top:4px;}
+.gauge-footer{margin-top:14px;text-align:center;padding:10px;border-radius:10px;background:rgba(240,184,104,.1);border:1px solid rgba(240,184,104,.25);font-size:12.5px;font-weight:700;color:var(--gold);}
+.hbar-chart{display:flex;flex-direction:column;gap:9px;position:relative;}
+.hbar-row{display:grid;grid-template-columns:150px 1fr 40px;align-items:center;gap:8px;}
+.hbar-label{font-size:11.5px;color:var(--text-1);text-align:right;}
+.hbar-track{position:relative;height:14px;border-radius:5px;background:rgba(255,255,255,.05);overflow:visible;}
+.hbar-fill{height:100%;border-radius:5px;background:var(--gold);}
+.hbar-fill.hi{background:var(--teal);}
+.hbar-val{font-size:11.5px;color:var(--text-0);font-family:'JetBrains Mono',monospace;}
+.hbar-target{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1px dashed var(--teal-dim);}
+.hbar-axis{display:grid;grid-template-columns:150px 1fr 40px;font-size:10px;color:var(--text-2);margin-top:6px;}
+.hbar-axis-ticks{display:flex;justify-content:space-between;}
+table.heat th,table.heat td{padding:9px 10px;font-size:12px;}
+table.heat tr.hi-row td{background:rgba(240,184,104,.16);color:var(--gold);font-weight:700;}
+table.heat tr.band td{background:rgba(255,255,255,.02);}
+table.heat td.lvl{color:var(--text-1);}
+.mot-row{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.03);}
+.mot-row b{font-family:'JetBrains Mono',monospace;color:var(--text-0);font-size:12.5px;}
+.mot-lvl{font-size:11.5px;font-weight:700;text-align:center;padding:5px 8px;border-radius:8px;}
+.mot-lvl.good{background:rgba(79,214,201,.16);color:var(--teal);}
+.mot-lvl.mid{background:rgba(240,184,104,.16);color:var(--gold);}
+.mot-lvl.bad{background:rgba(239,127,155,.16);color:var(--rose);}
+
+
+/* case cards */
+.case{border:1px solid var(--border-soft);border-radius:16px;padding:18px 20px;background:rgba(255,255,255,.025);}
+.case h4{margin:0 0 8px;font-size:13.5px;color:var(--teal);font-weight:800;}
+.case .task{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(240,184,104,.08);border:1px solid rgba(240,184,104,.22);font-size:12.5px;color:var(--text-0);}
+.case .data{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-1);margin:6px 0;}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.gallery figure{margin:0;border:1px solid var(--border-soft);border-radius:14px;overflow:visible;background:rgba(255,255,255,.025);}
+.gallery img{width:100%;display:block;}
+.gallery .viz{padding:18px 18px 6px;}
+.gallery figcaption{padding:10px 14px;font-size:12px;color:var(--text-1);background:rgba(255,255,255,.03);}
+.gallery .wide{grid-column:1/-1;}
+
+
+/* outline list */
+.outline{display:flex;flex-direction:column;gap:2px;}
+.outline .oitem{display:flex;gap:14px;padding:12px 6px;border-bottom:1px solid var(--border-soft);}
+.outline .oitem:last-child{border-bottom:none;}
+.outline .onum{flex:none;width:30px;height:30px;border-radius:9px;background:var(--glass-strong);border:1px solid var(--border-soft);color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:12.5px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.outline .otxt b{display:block;font-size:13.5px;color:var(--text-0);}
+.outline .otxt span{font-size:12px;color:var(--text-1);}
+
+/* footer hero */
+.foot-hero{position:relative;overflow:hidden;padding:56px 40px;text-align:center;border-radius:28px;
+  background:radial-gradient(800px 460px at 50% 120%, rgba(79,214,201,.28), transparent 60%), linear-gradient(200deg,#04100f,#081b19 60%,#04100f);
+  border:1px solid var(--border);}
+.foot-hero h2{font-size:24px;margin:0 0 8px;}
+.foot-hero p{color:var(--text-2);font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+@media (max-width:980px){
+  .shell{flex-direction:column;}
+  .sidenav{position:static;width:100%;flex-direction:row;overflow-x:auto;gap:6px;padding:10px;-webkit-overflow-scrolling:touch;margin-top:8px;}
+  .sidenav .navlabel{display:none;}
+  .navitem{flex:none;}
+  .grid2, .grid3, .grid4, .gallery{grid-template-columns:1fr;}
+  .scatter-row{grid-template-columns:1fr;}
+  .gauge-row{flex-direction:column;}
+  .hbar-row,.hbar-axis{grid-template-columns:110px 1fr 40px;}
+}
+@media (max-width:680px){
+  .hero{padding:44px 20px;}
+  .sec{padding:22px 18px;}
+}
+
+@media print{
+  @page{size:A4;margin:12mm;}
+  html,body{background:#fff !important;color:#111 !important;}
+  .ambient,.topbar,.sidenav,#progress{display:none !important;}
+  .glass{background:#fff !important;border:1px solid #ddd !important;backdrop-filter:none !important;box-shadow:none !important;}
+  .hero,.foot-hero{background:#0a1a19 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .sec{page-break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="ambient"><span></span><span></span><span></span></div>
+
+<header class="topbar glass">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="gemTable" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fff8ea"/>
+          <stop offset="100%" stop-color="#f0b868"/>
+        </linearGradient>
+        <linearGradient id="gemLeftCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#d3f7f0"/>
+          <stop offset="100%" stop-color="#4fd6c9"/>
+        </linearGradient>
+        <linearGradient id="gemRightCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4fd6c9"/>
+          <stop offset="100%" stop-color="#237167"/>
+        </linearGradient>
+        <linearGradient id="gemLeftPav" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#3fb2a5"/>
+          <stop offset="100%" stop-color="#1b6a60"/>
+        </linearGradient>
+        <linearGradient id="gemRightPav" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e8a94f"/>
+          <stop offset="100%" stop-color="#b9761f"/>
+        </linearGradient>
+        <filter id="gemShadow" x="-80%" y="-80%" width="260%" height="260%">
+          <feDropShadow dx="0" dy="4" stdDeviation="3.2" flood-color="#010807" flood-opacity=".7"/>
+        </filter>
+        <filter id="gemBlur"><feGaussianBlur stdDeviation="1.4"/></filter>
+      </defs>
+
+      <ellipse cx="20" cy="35.5" rx="13" ry="3" fill="#000" opacity=".4" filter="url(#gemBlur)"/>
+
+      <g filter="url(#gemShadow)" stroke="rgba(255,255,255,.5)" stroke-width=".6" stroke-linejoin="round">
+        <polygon points="6,16 20,34 17,13" fill="url(#gemLeftPav)"/>
+        <polygon points="34,16 20,34 23,13" fill="url(#gemRightPav)"/>
+        <polygon points="14,8 6,16 17,13" fill="url(#gemLeftCrown)"/>
+        <polygon points="26,8 34,16 23,13" fill="url(#gemRightCrown)"/>
+        <polygon points="14,8 26,8 23,13 17,13" fill="url(#gemTable)"/>
+      </g>
+      <path d="M17,13 L20,34 M23,13 L20,34" stroke="rgba(3,15,13,.35)" stroke-width=".6" fill="none"/>
+      <path d="M14,8 L6,16 M26,8 L34,16" stroke="rgba(255,255,255,.4)" stroke-width=".6" fill="none"/>
+    </svg>
+    <div class="txt"><b>Анализ результатов оценки персонала</b><small>формирование комплексных отчетов · 2026</small></div>
+  </div>
+  <div class="btns">
+    <button class="btn" id="btnPrint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      Печать / PDF
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidenav glass" id="sidenav">
+    <div class="navlabel">Разделы</div>
+    <a class="navitem" data-target="s1" href="#s1"><span class="ni-num">01</span>Предпосылки отчета</a>
+    <a class="navitem" data-target="s2" href="#s2"><span class="ni-num">02</span>Метрики качества</a>
+    <a class="navitem" data-target="s3" href="#s3"><span class="ni-num">03</span>Анализ данных</a>
+    <a class="navitem" data-target="s4" href="#s4"><span class="ni-num">04</span>Кейсы</a>
+    <a class="navitem" data-target="s5" href="#s5"><span class="ni-num">05</span>Корреляции</a>
+    <a class="navitem" data-target="s6" href="#s6"><span class="ni-num">06</span>9-Box Matrix</a>
+    <a class="navitem" data-target="s7" href="#s7"><span class="ni-num">07</span>Выводы</a>
+    <a class="navitem" data-target="s8" href="#s8"><span class="ni-num">08</span>Визуализация</a>
+    <a class="navitem" data-target="s9" href="#s9"><span class="ni-num">09</span>Структура отчета</a>
+    <a class="navitem" data-target="s10" href="#s10"><span class="ni-num">10</span>Результаты</a>
+  </nav>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="ring"></div>
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">Методология · комплексная оценка персонала</p>
+        <h1>Анализ результатов оценки и формирование комплексных отчетов</h1>
+        <p>От технического задания и выбора инструментов — до аналитики, корреляций, 9-box матрицы и выводов, которым доверяет заказчик.</p>
+        <div class="year">2026</div>
+      </div>
+    </section>
+
+    <!-- 01 -->
+    <section class="sec glass" id="s1">
+      <div class="sec-head">
+        <p class="sec-eyebrow">01 / Постановка задачи</p>
+        <h2>Предпосылки для составления качественного отчета</h2>
+        <p class="sub">Определить цель и задачи, решаемые по ходу оценки персонала. Техническое задание — «спецификация» оценки.</p>
+      </div>
+      <div class="sec-body">
+        <h3 class="h">Примеры вопросов заказчику перед началом проекта</h3>
+        <details class="acc">
+          <summary>Чек-лист из 8 вопросов заказчику</summary>
+          <div class="acc-body">
+            <ul class="list">
+              <li>Кто проходит оценку? — целевая аудитория инструментария.</li>
+              <li>Какие позиции/ФИО в оценке критические? — приоритезация, более глубокая оценка.</li>
+              <li>Что будем делать с результатами? — ФОТ, КР, ИПР, ШР и т.п.</li>
+              <li>Собираетесь ли вы по результатам оценки принять конкретные управленческие решения? — это определяет успешность оценки.</li>
+              <li>В каком формате вы хотите видеть результаты? Какие срезы были бы наиболее интересны? — ожидания от отчета.</li>
+              <li>Была ли оценка раньше и какие инструменты использовали? — наличие динамики и качество опыта.</li>
+              <li>Что в целом переживает компания? — на что обратить внимание в выводах.</li>
+              <li>Кто будет информировать сотрудников об оценке? — влияет на вовлеченность и отношение к оценке.</li>
+            </ul>
+          </div>
+        </details>
+
+        <div class="divider"></div>
+        <h3 class="h">Для чего используются разные инструменты оценки?</h3>
+        <p class="sub" style="margin:0 0 14px;">Все инструменты оценки персонала можно разбить на три подхода.</p>
+        <div class="grid3">
+          <div class="card">
+            <span class="tag teal">Экспертные</span>
+            <ul class="list" style="margin-top:10px;">
+              <li>Ассессмент-центр</li>
+              <li>Интервью по компетенциям</li>
+              <li>Интервью по мотивации</li>
+              <li>Интервью глубинное</li>
+              <li>Кейс-тесты</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="tag gold">Психометрические</span>
+            <ul class="list" style="margin-top:10px;">
+              <li>Тесты способностей</li>
+              <li>Психологически-личностные опросники</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="tag sky">Социометрические</span>
+            <ul class="list" style="margin-top:10px;">
+              <li>Опрос удовлетворенности и вовлеченности персонала</li>
+              <li>Опрос 360 градусов</li>
+              <li>Пульс опросы</li>
+              <li>Тематические опросы</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="h">Инструмент → управленческие решения</h3>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>Инструмент</th><th>Управленческие решения</th></tr></thead>
+            <tbody>
+              <tr><td>Ассессмент-центр</td><td class="dim">Кандидаты на повышение, кадровый резерв, планирование карьеры, назначение на ключевые позиции</td></tr>
+              <tr><td>Чек-лист эффективности</td><td class="dim">Корректировка KPI, премии/бонусы, планирование развития</td></tr>
+              <tr><td>Чек-лист проф. знаний</td><td class="dim">Допуск к работам, направление на обучение, пересмотр грейда</td></tr>
+              <tr><td>Интервью по компетенциям</td><td class="dim">Отбор при найме, соответствие культуре, потребности в развитии soft skills</td></tr>
+              <tr><td>Профессиональный тест</td><td class="dim">Технический отбор, аттестация, учебные программы</td></tr>
+              <tr><td>Кейс-тесты</td><td class="dim">Потребности в развитии soft skills, лидерский потенциал</td></tr>
+              <tr><td>Опросник мотивации</td><td class="dim">Индивидуальные мотивационные схемы, удержание, расширение функционала</td></tr>
+              <tr><td>Тесты способностей</td><td class="dim">Отбор на позиции с высокими когнитивными требованиями, прогноз скорости обучения</td></tr>
+              <tr><td>Психометрические тесты</td><td class="dim">Отбор на стрессовые позиции, формирование команд, риски адаптации</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="sec glass" id="s2">
+      <div class="sec-head">
+        <p class="sec-eyebrow">02 / Чек-лист</p>
+        <h2>Метрики качества отчета об оценке персонала</h2>
+      </div>
+      <div class="sec-body">
+        <div class="grid2">
+          <ul class="list">
+            <li>Содержит паспорт оценки (цель / задачи / сроки / команда / этапы / инструменты / участники)</li>
+            <li>Содержит «дашборд» результатов оценки</li>
+            <li>Методология каждого инструмента, включая шкалу оценок, описана кратко и понятным для заказчика языком</li>
+            <li>Показано, как разные инструменты приведены к единой шкале для итогового рейтинга</li>
+            <li>Содержит визуализацию данных (таблицы, диаграммы, цвет, графика)</li>
+          </ul>
+          <ul class="list">
+            <li>Содержит корреляции — если это соответствует целям оценки (факторы успеха, валидация инструментов, справедливость оценки)</li>
+            <li>Содержит детализацию по компетенциям: сильные и слабые стороны</li>
+            <li>Приведена общая статистика и сравнительный анализ по каждому инструменту (охват, средний балл, динамика, бенчмарки, срезы)</li>
+            <li>Содержит приложение со сводными данными — «тепловая карта», защищенная паролем (обычно Excel)</li>
+            <li>Содержит матрицу 9-box и рейтинг участников, если это предусмотрено целями оценки</li>
+          </ul>
+        </div>
+        <div class="divider"></div>
+        <div class="card good">
+          <p style="margin:0;">Если заказчик, прочитав отчет и обсудив его с вами, принял конкретные решения по работе с персоналом — задача отработана качественно. Дальше — мониторить, что происходит с участниками оценки, нарабатывать опыт и проверять, какие гипотезы подтвердились.</p>
+        </div>
+        <p style="margin-top:14px; text-align:center; font-style:italic; color:var(--text-1);">После составления отчета спросите себя: как бы я оценил свой отчет, если бы был директором предприятия?</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="sec glass" id="s3">
+      <div class="sec-head">
+        <p class="sec-eyebrow">03 / Методология</p>
+        <h2>Анализ данных оценки персонала</h2>
+      </div>
+      <div class="sec-body">
+        <h3 class="h">Базовые принципы</h3>
+        <div class="grid3">
+          <div class="card"><b style="color:var(--text-0);">От общего к частному</b><p style="margin-top:6px;">Свод → группы → индивидуумы.</p></div>
+          <div class="card"><b style="color:var(--text-0);">Контекст важнее цифр</b><p style="margin-top:6px;">«Средний балл 3,8» — неинформативно. «Средний балл 3,8 при целевом пороге 4,0 — на 35% ниже стандарта» — полезно.</p></div>
+          <div class="card"><b style="color:var(--text-0);">Сравниваем только сопоставимое</b><p style="margin-top:6px;">Инструменты оценки, методики, временные периоды должны совпадать.</p></div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="h">Продвинутая аналитика — превью 9-box</h3>
+        <div class="ninebox-wrap">
+          <div class="ninebox">
+            <div class="nb-axis-y">Производительность</div>
+            <div class="nb-cell">—</div><div class="nb-cell">—</div><div class="nb-cell hi">Звезды</div>
+            <div class="nb-cell">—</div><div class="nb-cell mid">Ядро</div><div class="nb-cell">—</div>
+            <div class="nb-cell lo">Риск</div><div class="nb-cell">—</div><div class="nb-cell">—</div>
+            <div></div>
+            <div class="nb-xlabels" style="grid-column:2/5;"><span>Низкий</span><span>Средний</span><span>Высокий</span></div>
+          </div>
+          <p style="color:var(--text-1); font-size:13px; margin:0;">Потенциал (по горизонтали) сопоставляется с производительностью (по вертикали) — подробный разбор матрицы в разделе 06.</p>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="h">Gap-анализ (разрывы)</h3>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>Тип разрыва</th><th>Считаем</th></tr></thead>
+            <tbody>
+              <tr><td>Ожидание vs Факт</td><td class="dim">Целевой балл − фактический балл</td></tr>
+              <tr><td>Самооценка vs Оценка 360</td><td class="dim">Самооценка − 360</td></tr>
+              <tr><td>Текущий vs Желаемый уровень</td><td class="dim">Разница по компетенциям</td></tr>
+              <tr><td>Внутри команды</td><td class="dim">Макс − Мин в отделе</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="h">Базовые метрики</h3>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>Метрика</th><th>Формула / интерпретация</th><th>Для чего использовать</th></tr></thead>
+            <tbody>
+              <tr><td>Среднее (mean)</td><td class="dim">Сумма / количество</td><td class="dim">Общая картина по группе</td></tr>
+              <tr><td>Медиана</td><td class="dim">Значение в центре выборки</td><td class="dim">Когда есть выбросы</td></tr>
+              <tr><td>Мода</td><td class="dim">Самое частое значение</td><td class="dim">Выявить «типичный» уровень</td></tr>
+              <tr><td>Стандартное отклонение</td><td class="dim">Разброс вокруг среднего</td><td class="dim">Насколько разнородна группа</td></tr>
+              <tr><td>Доля по диапазонам</td><td class="dim">% в диапазоне 0–2, 2–3, 3–4, 4–5</td><td class="dim">Есть ли «потолок» или «пол» оценок</td></tr>
+              <tr><td>Динамика и сравнение</td><td class="dim">Год к году, подразделения, уровни</td><td class="dim">Прирост в % или баллах</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="sec glass" id="s4">
+      <div class="sec-head">
+        <p class="sec-eyebrow">04 / Практика</p>
+        <h2>Анализ данных: кейсы</h2>
+      </div>
+      <div class="sec-body">
+        <div class="grid2">
+          <div class="case">
+            <h4>Кейс №1 · Ловушка «среднего чека»</h4>
+            <p>Оценка профессиональных знаний (Hard Skills) ИТ-отдела из 10 человек по 100-балльной шкале. Руководитель видит средний балл отдела — 78 из 100 — и считает, что обучение команде не нужно, они крепкие профи.</p>
+            <div class="data">Баллы: 98, 96, 95, 95, 92, 40, 38, 35, 31, 30</div>
+            <div class="task">Задание: посмотрите на данные внимательнее. Прав ли руководитель? Почему? Аргументируйте.</div>
+          </div>
+          <div class="case">
+            <h4>Кейс №2 · Слепая зона</h4>
+            <p>Руководитель ключевого департамента прошел оценку «360 градусов» по компетенциям «Командное лидерство» и «Развитие людей». Шкала от 1 до 5.</p>
+            <div class="data">
+              Самооценка: 4.8 · Вышестоящий директор: 4.5<br>
+              Коллеги (смежные отделы): 4.2 · Подчиненные (его команда): 2.1
+            </div>
+            <div class="task">Задание: какой вывод можно сделать о стиле управления руководителя и какое HR-действие предпринять?</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="sec glass" id="s5">
+      <div class="sec-head">
+        <p class="sec-eyebrow">05 / Статистика</p>
+        <h2>Корреляционный анализ</h2>
+        <p class="sub">Корреляция — это связь. Но не любая.</p>
+      </div>
+      <div class="sec-body">
+        <div class="grid2">
+          <div class="card">
+            <b style="color:var(--text-0);">Функциональная связь</b>
+            <p style="margin-top:6px;">Педаль газа → скорость. В основе лежит физический закон.</p>
+          </div>
+          <div class="card">
+            <b style="color:var(--text-0);">Корреляционная связь</b>
+            <p style="margin-top:6px;">Продажи → оклад. Простая согласованность изменения двух показателей — вероятностная (стохастическая) закономерность, а не закон.</p>
+          </div>
+        </div>
+        <p style="margin-top:12px;">Полученное число называется коэффициентом корреляции. Знак «+»/«−» отражает направление связи (прямая/обратная), величина коэффициента — ее силу.</p>
+
+        <div class="divider"></div>
+        <h3 class="h">Максимально возможная сила зависимости — примеры</h3>
+        <div class="scatter-row">
+          <div class="scatter-card">
+            <svg viewBox="0 0 100 60"><line x1="8" y1="52" x2="92" y2="8" stroke="#4fd6c9" stroke-width="1" opacity=".35"/>
+              <circle cx="12" cy="49" r="3" fill="#4fd6c9"/><circle cx="22" cy="43" r="3" fill="#4fd6c9"/><circle cx="32" cy="37" r="3" fill="#4fd6c9"/>
+              <circle cx="42" cy="32" r="3" fill="#4fd6c9"/><circle cx="52" cy="27" r="3" fill="#4fd6c9"/><circle cx="62" cy="22" r="3" fill="#4fd6c9"/>
+              <circle cx="72" cy="17" r="3" fill="#4fd6c9"/><circle cx="82" cy="12" r="3" fill="#4fd6c9"/></svg>
+            <div class="r" style="color:var(--teal);">r = 1</div>
+            <div class="lbl">IQ ↔ успеваемость — полная согласованность</div>
+          </div>
+          <div class="scatter-card">
+            <svg viewBox="0 0 100 60"><line x1="8" y1="8" x2="92" y2="52" stroke="#ef7f9b" stroke-width="1" opacity=".35"/>
+              <circle cx="12" cy="11" r="3" fill="#ef7f9b"/><circle cx="22" cy="17" r="3" fill="#ef7f9b"/><circle cx="32" cy="23" r="3" fill="#ef7f9b"/>
+              <circle cx="42" cy="28" r="3" fill="#ef7f9b"/><circle cx="52" cy="33" r="3" fill="#ef7f9b"/><circle cx="62" cy="38" r="3" fill="#ef7f9b"/>
+              <circle cx="72" cy="43" r="3" fill="#ef7f9b"/><circle cx="82" cy="48" r="3" fill="#ef7f9b"/></svg>
+            <div class="r" style="color:var(--rose);">r = −1</div>
+            <div class="lbl">IQ ↔ успех в общении — полная обратная связь</div>
+          </div>
+          <div class="scatter-card">
+            <svg viewBox="0 0 100 60">
+              <circle cx="14" cy="24" r="3" fill="#a8bab7"/><circle cx="26" cy="46" r="3" fill="#a8bab7"/><circle cx="35" cy="18" r="3" fill="#a8bab7"/>
+              <circle cx="47" cy="38" r="3" fill="#a8bab7"/><circle cx="55" cy="14" r="3" fill="#a8bab7"/><circle cx="66" cy="44" r="3" fill="#a8bab7"/>
+              <circle cx="75" cy="22" r="3" fill="#a8bab7"/><circle cx="86" cy="30" r="3" fill="#a8bab7"/></svg>
+            <div class="r" style="color:var(--text-1);">r ≈ 0</div>
+            <div class="lbl">IQ ↔ длина прыжка — связи нет</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 class="h">Диапазон силы связи — как трактовать в HR-оценке</h3>
+        <div class="corr-scale">
+          <div style="background:#3a4a48;">0–0.1</div>
+          <div style="background:#5b7f9c;">0.1–0.3</div>
+          <div style="background:#4fa3a0;">0.3–0.5</div>
+          <div style="background:#3fc0b4;">0.5–0.7</div>
+          <div style="background:#28d6c2;">0.7–0.9</div>
+          <div style="background:#f0b868; color:#1a1400;">0.9–0.99</div>
+          <div style="background:#ffe28a; color:#1a1400;">1.0</div>
+        </div>
+        <div class="tbl-wrap" style="margin-top:12px;">
+          <table class="dtbl">
+            <tbody>
+              <tr><td style="width:110px;">0.0 – 0.1</td><td class="dim">Практически отсутствует. Показатели независимы друг от друга.</td></tr>
+              <tr><td>0.1 – 0.3</td><td class="dim">Слабая. Например, стаж лишь символически влияет на оценку 360.</td></tr>
+              <tr><td>0.3 – 0.5</td><td class="dim">Умеренная. Есть тенденция, инструмент оценки начинает быть полезным.</td></tr>
+              <tr><td>0.5 – 0.7</td><td class="dim">Заметная. Например, баллы за тест знаний заметно влияют на скорость задач.</td></tr>
+              <tr><td>0.7 – 0.9</td><td class="dim">Высокая. Навык критически важен для бизнес-результата.</td></tr>
+              <tr><td>0.9 – 0.99</td><td class="dim">Весьма высокая. В HR встречается редко.</td></tr>
+              <tr><td>1.0</td><td class="dim">Функциональная. Один показатель полностью определяет другой.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 class="h" style="margin-top:20px;">Где применяется</h4>
+        <ul class="list">
+          <li>Между оценками руководителя и подчиненных в методе 360</li>
+          <li>Между оценкой по инструментам (агрегированной) и KPI</li>
+          <li>Между личностными характеристиками в опроснике DEEP</li>
+          <li>Между оценками по разным инструментам</li>
+          <li>Между входными оценками потенциала и оценками после обучения</li>
+        </ul>
+
+        <div class="divider"></div>
+        <h3 class="h">Коэффициенты Пирсона и Спирмена</h3>
+        <div class="grid2">
+          <div class="card">
+            <span class="tag teal">Пирсон</span>
+            <p style="margin-top:10px;">Для количественных данных с нормальным распределением и предполагаемой прямой пропорциональной зависимостью. Расчет идет через среднее значение — выбросы данных могут исказить результат.</p>
+            <ul class="list" style="margin-top:8px;">
+              <li>Баллы теста (0–100) ↔ выполненные KPI-задачи за год</li>
+              <li>Часы обучения ↔ объем личных продаж</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="tag gold">Спирмен</span>
+            <p style="margin-top:10px;">Ранговый коэффициент — переводит значения в места в рейтинге. Не важно, нормальное ли распределение и есть ли аномалии; выбросы почти не влияют на результат.</p>
+            <ul class="list" style="margin-top:8px;">
+              <li>Оценка 360 (1–5) ↔ грейд сотрудника</li>
+              <li>Место в рейтинге ассессмента ↔ стаж работы (мес.)</li>
+            </ul>
+          </div>
+        </div>
+        <p style="margin-top:12px;">Если результаты тестирования корректны, различия коэффициентов Пирсона и Спирмена незначительны, при этом Пирсон дает более точное значение взаимосвязи.</p>
+
+        <div class="divider"></div>
+        <h3 class="h">Пример расчета в Excel</h3>
+        <ol class="steps">
+          <li>Занесите данные (два столбца) в таблицу Excel.</li>
+          <li>Переместите курсор в пустую ячейку → «Вставить функцию» → «КОРРЕЛ» из раздела «Статистические».</li>
+          <li>Формат функции: <span class="mono">КОРРЕЛ(массив1; массив2)</span> — выделите два столбца данных.</li>
+          <li>Нажмите ✓ (рассчитать). В примере ниже — IQ и длина прыжка, результат 0,038: коэффициент не равен нулю, но очень близок к нему.</li>
+        </ol>
+        <p style="font-size:12.5px; color:var(--text-2);">В Excel реализована формула только для коэффициента Пирсона. Спирмена можно посчитать через перевод данных в ранги и стандартную формулу корреляции.</p>
+        <div class="tbl-wrap" style="margin-top:14px;">
+          <table class="dtbl">
+            <thead><tr><th>Испытуемый</th><th>IQ</th><th>Длина прыжка с места (м)</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td class="dim">90</td><td class="dim">2,5</td></tr>
+              <tr><td>2</td><td class="dim">91</td><td class="dim">1,2</td></tr>
+              <tr><td>3</td><td class="dim">92</td><td class="dim">2</td></tr>
+              <tr><td>4</td><td class="dim">93</td><td class="dim">1,7</td></tr>
+              <tr><td>5</td><td class="dim">94</td><td class="dim">1,9</td></tr>
+              <tr><td>6</td><td class="dim">95</td><td class="dim">1,3</td></tr>
+              <tr><td>7</td><td class="dim">96</td><td class="dim">1,7</td></tr>
+              <tr><td>8</td><td class="dim">97</td><td class="dim">2,3</td></tr>
+              <tr><td>9</td><td class="dim">98</td><td class="dim">1,1</td></tr>
+              <tr><td>10</td><td class="dim">99</td><td class="dim">2,6</td></tr>
+              <tr><td colspan="2" style="text-align:right; font-weight:700; color:var(--text-0);">Коэффициент корреляции Пирсона <span class="mono" style="color:var(--text-2); font-weight:400;">— КОРРЕЛ(B2:B11;C2:C11)</span></td><td style="background:rgba(240,184,104,.22); color:var(--gold); font-weight:800;">0,038</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px; color:var(--text-2); margin-top:8px;">Коэффициент близок к нулю — линейной взаимосвязи между IQ и длиной прыжка с места в выборке практически нет.</p>
+
+        <div class="divider"></div>
+        <h3 class="h">Матрица корреляций: пример</h3>
+        <div class="tbl-wrap">
+          <table class="dtbl">
+            <thead><tr><th>Инструменты</th><th>Ассессмент-центр</th><th>Тесты способностей</th><th>Интервью</th><th>Самооценка</th></tr></thead>
+            <tbody>
+              <tr><td>Ассессмент-центр</td><td style="background:rgba(255,226,138,.18); color:var(--gold); font-weight:700;">1.00</td><td style="background:rgba(63,192,180,.16);">0.65</td><td style="background:rgba(79,163,160,.14);">0.58</td><td style="background:rgba(58,74,72,.5); color:var(--text-2);">0.22</td></tr>
+              <tr><td>Тесты способностей</td><td style="background:rgba(63,192,180,.16);">0.65</td><td style="background:rgba(255,226,138,.18); color:var(--gold); font-weight:700;">1.00</td><td style="background:rgba(91,127,156,.3);">0.40</td><td style="background:rgba(58,74,72,.5); color:var(--text-2);">0.15</td></tr>
+              <tr><td>Интервью</td><td style="background:rgba(79,163,160,.14);">0.58</td><td style="background:rgba(91,127,156,.3);">0.40</td><td style="background:rgba(255,226,138,.18); color:var(--gold); font-weight:700;">1.00</td><td style="background:rgba(91,127,156,.3);">0.31</td></tr>
+              <tr><td>Самооценка</td><td style="background:rgba(58,74,72,.5); color:var(--text-2);">0.22</td><td style="background:rgba(58,74,72,.5); color:var(--text-2);">0.15</td><td style="background:rgba(91,127,156,.3);">0.31</td><td style="background:rgba(255,226,138,.18); color:var(--gold); font-weight:700;">1.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="sec glass" id="s6">
+      <div class="sec-head">
+        <p class="sec-eyebrow">06 / Инструмент</p>
+        <h2>9-Box Matrix: что это и как использовать</h2>
+      </div>
+      <div class="sec-body">
+        <p>Инструмент для классификации сотрудников по двум измерениям: <b style="color:var(--text-0);">оценка эффективности</b> (результаты работы — по вертикали) и <b style="color:var(--text-0);">потенциал развития</b> (способности к росту — по горизонтали). Помогает принимать кадровые решения: кого развивать, кого удерживать, кого заменять.</p>
+
+        <div class="divider"></div>
+        <h3 class="h">Важные акценты в матрице</h3>
+        <ol class="steps">
+          <li>Два независимых измерения. Эффективность — что человек сделал за прошлый период. Потенциал — что может сделать в будущем (обучаемость, лидерство, стрессоустойчивость).</li>
+          <li>Это не «приговор», а диагностический инструмент — перемещение по матрице возможно, цель — рост вверх и вправо.</li>
+          <li>Критерии оценки должны быть прозрачны.</li>
+        </ol>
+
+        <div class="divider"></div>
+        <div class="grid2">
+          <div>
+            <h3 class="h">Ошибки при построении</h3>
+            <ul class="list">
+              <li>Оценивать потенциал как «хорошие отношения с руководством»</li>
+              <li>Игнорировать контекст позиции (не все позиции предполагают рост)</li>
+              <li>Игнорировать контекст корпоративной культуры — зеленые и красные зоны в разных компаниях не совпадают</li>
+              <li>Ставить сотрудника в бокс раз и навсегда</li>
+              <li>Использовать только мнение непосредственного руководителя</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="h">Что делать, если нет измеримых КПЭ</h3>
+            <ol class="steps">
+              <li>Сделать еще одну попытку найти 1–2 измеримых показателя с подтверждением для оцениваемой группы.</li>
+              <li>Если не вышло — использовать оценку руководителем, но только со структурированными критериями, калибровкой между руководителями и обязательными примерами.</li>
+              <li>Четко представлять, какие метрики стоят за каждым боксом и на каком уровне их значения.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;"><p style="margin:0;">Без калибровки и примеров матрица становится инструментом личных симпатий, а не анализа.</p></div>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section class="sec glass" id="s7">
+      <div class="sec-head">
+        <p class="sec-eyebrow">07 / Формулировки</p>
+        <h2>Выводы в отчетах по оценке персонала</h2>
+        <p class="sub">Выводы должны стремиться ответить на три вопроса: что важно? что делать? какой результат ждать?</p>
+      </div>
+      <div class="sec-body">
+        <div class="grid2">
+          <div class="card bad">
+            <span class="tag rose">Бесполезный вывод</span>
+            <p style="margin-top:10px;">«В отделе 3 сотрудника получили оценку ниже 3 из 5»</p>
+          </div>
+          <div class="card good">
+            <span class="tag teal">Полезный вывод</span>
+            <p style="margin-top:10px;">«3 сотрудника в отделе имеют критически низкую эффективность (оценка ≤3). Требуется план улучшения или замена в течение 2 месяцев, чтобы избежать срыва сроков по проекту»</p>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <h3 class="h">Чек-лист хорошего вывода</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <span class="chip">Конкретика <span style="color:var(--text-2); font-weight:400;">— цифры, периоды, имена</span></span>
+          <span class="chip">Причина <span style="color:var(--text-2); font-weight:400;">— предположение, почему это так</span></span>
+          <span class="chip">Риск <span style="color:var(--text-2); font-weight:400;">— что будет, если не действовать</span></span>
+          <span class="chip">Решение <span style="color:var(--text-2); font-weight:400;">— есть конкретная рекомендация</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="sec glass" id="s8">
+      <div class="sec-head">
+        <p class="sec-eyebrow">08 / Примеры</p>
+        <h2>Визуализация в отчетах по оценке персонала</h2>
+        <p class="sub">Таблицы, диаграммы, цветовые решения — реальные фрагменты отчетов.</p>
+      </div>
+      <div class="sec-body">
+        <div class="gallery">
+
+          <figure>
+            <div class="viz">
+              <div class="viz-title">Тесты способностей / группа 112 чел.</div>
+              <div class="gauge-row">
+                <div class="gauge-item">
+                  <div class="gauge-label">Числовая информация</div>
+                  <svg class="gauge-svg" viewBox="0 0 200 118">
+                    <defs><linearGradient id="gg1" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#ef7f9b"/><stop offset="50%" stop-color="#f0b868"/><stop offset="100%" stop-color="#4fd6c9"/>
+                    </linearGradient></defs>
+                    <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="url(#gg1)" stroke-width="20" stroke-linecap="round"/>
+                    <g transform="rotate(-8.4 100 100)"><line x1="100" y1="100" x2="100" y2="34" stroke="#e9f1ef" stroke-width="4" stroke-linecap="round"/></g>
+                    <circle cx="100" cy="100" r="6" fill="#e9f1ef"/>
+                  </svg>
+                  <div class="gauge-value">5,08</div>
+                  <div class="gauge-scale"><span>1</span><span>10</span></div>
+                </div>
+                <div class="gauge-item">
+                  <div class="gauge-label">Вербальная информация</div>
+                  <svg class="gauge-svg" viewBox="0 0 200 118">
+                    <defs><linearGradient id="gg2" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#ef7f9b"/><stop offset="50%" stop-color="#f0b868"/><stop offset="100%" stop-color="#4fd6c9"/>
+                    </linearGradient></defs>
+                    <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="url(#gg2)" stroke-width="20" stroke-linecap="round"/>
+                    <g transform="rotate(-14 100 100)"><line x1="100" y1="100" x2="100" y2="34" stroke="#e9f1ef" stroke-width="4" stroke-linecap="round"/></g>
+                    <circle cx="100" cy="100" r="6" fill="#e9f1ef"/>
+                  </svg>
+                  <div class="gauge-value">4,80</div>
+                  <div class="gauge-scale"><span>1</span><span>10</span></div>
+                </div>
+              </div>
+              <div class="gauge-footer">Рейтинг в системе Онтаргет по группе — 4,70</div>
+            </div>
+            <figcaption>Индикаторные шкалы (gauge) — тесты способностей по группе</figcaption>
+          </figure>
+
+          <figure>
+            <div class="viz">
+              <div class="viz-title">Ассессмент-центр / интервью по компетенциям / 112 чел.</div>
+              <div class="hbar-chart">
+                <div class="hbar-row"><span class="hbar-label">Партнерство</span><div class="hbar-track"><div class="hbar-fill" style="width:59.6%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,79</span></div>
+                <div class="hbar-row"><span class="hbar-label">Приверженность</span><div class="hbar-track"><div class="hbar-fill hi" style="width:66.6%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">2,00</span></div>
+                <div class="hbar-row"><span class="hbar-label">Стратегическое принятие решений</span><div class="hbar-track"><div class="hbar-fill" style="width:52%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,56</span></div>
+                <div class="hbar-row"><span class="hbar-label">Управление людьми</span><div class="hbar-track"><div class="hbar-fill" style="width:59.6%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,79</span></div>
+                <div class="hbar-row"><span class="hbar-label">Взаимодействие с другими</span><div class="hbar-track"><div class="hbar-fill" style="width:60%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,80</span></div>
+                <div class="hbar-row"><span class="hbar-label">Лидерство в команде</span><div class="hbar-track"><div class="hbar-fill" style="width:53.3%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,60</span></div>
+                <div class="hbar-row"><span class="hbar-label">Развитие команды</span><div class="hbar-track"><div class="hbar-fill" style="width:50.6%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,52</span></div>
+                <div class="hbar-row"><span class="hbar-label">Непрерывное улучшение</span><div class="hbar-track"><div class="hbar-fill" style="width:58.3%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,75</span></div>
+                <div class="hbar-row"><span class="hbar-label">Ответственность за результат</span><div class="hbar-track"><div class="hbar-fill" style="width:60%"></div><div class="hbar-target" style="left:71.6%"></div></div><span class="hbar-val">1,80</span></div>
+              </div>
+              <div class="hbar-axis"><span></span><div class="hbar-axis-ticks"><span>0,00</span><span>0,50</span><span>1,00</span><span>1,50</span><span>2,00</span><span>2,50</span><span>3,00</span></div><span></span></div>
+            </div>
+            <figcaption>Горизонтальная диаграмма компетенций</figcaption>
+          </figure>
+
+          <figure class="wide">
+            <div class="viz">
+              <div class="grid2">
+                <div>
+                  <div class="viz-title" style="text-align:left;">Мотивация к деятельности / 112 чел.</div>
+                  <div class="mot-row"><b>41 сотрудник</b><span class="mot-lvl good">Устойчивая</span></div>
+                  <div class="mot-row"><b>54 сотрудника</b><span class="mot-lvl mid">Неустойчивая</span></div>
+                  <div class="mot-row"><b>16 сотрудников</b><span class="mot-lvl bad">Крайне неустойчивая</span></div>
+                </div>
+                <div>
+                  <div class="viz-title" style="text-align:left;">Опросник DEEP / 112 чел.</div>
+                  <div class="tbl-wrap">
+                    <table class="dtbl">
+                      <thead><tr><th>Характеристика</th><th>Кол-во повторений</th><th>Ниже 4 / Выше 7</th></tr></thead>
+                      <tbody>
+                        <tr><td>Анализ мотивов</td><td class="dim">29</td><td style="color:var(--rose); font-weight:700;">26%</td></tr>
+                        <tr><td>Оригинальность</td><td class="dim">27</td><td style="color:var(--teal); font-weight:700;">24%</td></tr>
+                        <tr><td>Оптимизм</td><td class="dim">34</td><td style="color:var(--rose); font-weight:700;">30%</td></tr>
+                        <tr><td>Независимость</td><td class="dim">45</td><td style="color:var(--teal); font-weight:700;">40%</td></tr>
+                        <tr><td>Принципиальность</td><td class="dim">29</td><td style="color:var(--teal); font-weight:700;">26%</td></tr>
+                        <tr><td>Гибкость</td><td class="dim">28</td><td style="color:var(--teal); font-weight:700;">25%</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <figcaption>Таблица мотивации и опросника DEEP</figcaption>
+          </figure>
+
+          <figure class="wide">
+            <div class="viz">
+              <div class="tbl-wrap">
+                <table class="dtbl heat">
+                  <thead><tr><th>№</th><th>Уровень развития компетенций</th><th>Диапазон средних значений оценок</th><th>Кол-во сотрудников</th><th>% сотрудников</th></tr></thead>
+                  <tbody>
+                    <tr><td>1</td><td>Превосходит ожидания</td><td class="dim">от 2,6 и выше</td><td style="color:var(--teal);">1</td><td style="color:var(--teal); font-weight:700;">1%</td></tr>
+                    <tr><td>2</td><td>Целевой уровень</td><td class="dim">от 2 вкл. до 2,5</td><td style="color:var(--teal);">19</td><td style="color:var(--teal); font-weight:700;">20%</td></tr>
+                    <tr><td>3</td><td>Требуются улучшения</td><td class="dim">от 1,5 вкл. до 2</td><td style="color:var(--gold);">55</td><td style="color:var(--gold); font-weight:700;">55%</td></tr>
+                    <tr><td>4</td><td>Требуются значительные улучшения</td><td class="dim">до 1,5</td><td style="color:var(--rose);">24</td><td style="color:var(--rose); font-weight:700;">24%</td></tr>
+                    <tr class="hi-row"><td colspan="3" style="text-align:right;">ИТОГО:</td><td>99</td><td>100%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <figcaption>Ранжирование по уровню компетенций</figcaption>
+          </figure>
+
+          <figure class="wide">
+            <div class="viz">
+              <div class="tbl-wrap">
+                <table class="dtbl heat">
+                  <thead><tr><th>Наименование теста</th><th>Нормативная группа</th><th>Среднее значение по группе, St</th><th>Уровень выполнения</th></tr></thead>
+                  <tbody>
+                    <tr><td>Работа с числовой информацией, sapphire</td><td>Топ-менеджмент</td><td>6</td><td class="lvl">Средний</td></tr>
+                    <tr><td>Работа с вербальной информацией, sapphire</td><td>Топ-менеджмент</td><td>5</td><td class="lvl">Средний</td></tr>
+                    <tr class="hi-row"><td>Рейтинг по двум тестам <span style="font-weight:400; font-style:italic;">(модель расчета внедрена в систему Онтаргет)</span></td><td>Топ-менеджмент</td><td>5</td><td>Средний</td></tr>
+                    <tr class="band"><td>Работа с числовой информацией, sapphire</td><td>Средний менеджмент</td><td>5</td><td class="lvl">Средний</td></tr>
+                    <tr class="band"><td>Работа с вербальной информацией, sapphire</td><td>Средний менеджмент</td><td>5</td><td class="lvl">Средний</td></tr>
+                    <tr><td>Работа с числовой информацией, green</td><td>Зам. нач. цехов и нач. бюро</td><td>5</td><td class="lvl">Средний</td></tr>
+                    <tr><td>Работа с вербальной информацией, green</td><td>Зам. нач. цехов и нач. бюро</td><td>4</td><td class="lvl">Средний</td></tr>
+                    <tr class="hi-row"><td>Рейтинг по двум тестам <span style="font-weight:400; font-style:italic;">(Sapphire, Ср. менеджмент)</span></td><td>Sapphire, Ср. менеджмент</td><td>5</td><td>Средний</td></tr>
+                    <tr class="hi-row"><td>Рейтинг по двум тестам <span style="font-weight:400; font-style:italic;">(Green, Зам. нач. цехов и нач. бюро)</span></td><td>Green, Зам. нач. цехов и нач. бюро</td><td>5</td><td>Средний</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <figcaption>Тепловая карта результатов тестов</figcaption>
+          </figure>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section class="sec glass" id="s9">
+      <div class="sec-head">
+        <p class="sec-eyebrow">09 / Шаблон</p>
+        <h2>Содержание комплексного отчета об оценке персонала</h2>
+      </div>
+      <div class="sec-body">
+        <div class="outline">
+          <div class="oitem"><div class="onum">1</div><div class="otxt"><b>Титульный лист</b></div></div>
+          <div class="oitem"><div class="onum">2</div><div class="otxt"><b>Дашборд с верхнеуровневыми показателями</b><span>по группе оцениваемых</span></div></div>
+          <div class="oitem"><div class="onum">3</div><div class="otxt"><b>Программа оценки сотрудников</b><span>заказчик, численность, период, цель · проектная команда · инструменты и шкалы · график мероприятий · список участников</span></div></div>
+          <div class="oitem"><div class="onum">4</div><div class="otxt"><b>Результаты оценки по каждому инструменту</b><span>описание инструмента и что измеряет · аналитика данных · рейтинг сотрудников · выводы · корреляции (если требуются)</span></div></div>
+          <div class="oitem"><div class="onum">5</div><div class="otxt"><b>Заключение</b><span>рейтинг участников комплексной оценки с учетом весов инструментов</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="sec glass" id="s10">
+      <div class="sec-head">
+        <p class="sec-eyebrow">10 / Итог</p>
+        <h2>Результаты оценки</h2>
+      </div>
+      <div class="sec-body">
+        <div class="grid3">
+          <div class="card"><b style="color:var(--text-0);">Общий отчет</b><p style="margin-top:6px;">По комплексной оценке команды и по функциям.</p></div>
+          <div class="card"><b style="color:var(--text-0);">Excel-таблица</b><p style="margin-top:6px;">С результатами оценок.</p></div>
+          <div class="card"><b style="color:var(--text-0);">Индивидуальные отчеты</b><p style="margin-top:6px;">Каждому участнику оценки.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER HERO -->
+    <section class="foot-hero">
+      <h2>Спасибо за внимание!</h2>
+      <p>2026</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* reading progress */
+function updateProgress(){
+  var h = document.documentElement;
+  var scrolled = h.scrollTop;
+  var height = h.scrollHeight - h.clientHeight;
+  var pct = height > 0 ? (scrolled / height) * 100 : 0;
+  document.getElementById('progress').style.width = pct + '%';
+}
+window.addEventListener('scroll', updateProgress);
+updateProgress();
+
+/* active section highlight */
+var ids = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'];
+var sections = ids.map(function(id){ return document.getElementById(id); });
+var navItems = document.querySelectorAll('.navitem');
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if (entry.isIntersecting){
+      var active = document.querySelector('.navitem[data-target="'+entry.target.id+'"]');
+      navItems.forEach(function(n){ n.classList.toggle('active', n === active); });
+    }
+  });
+}, {rootMargin:'-35% 0px -55% 0px'});
+sections.forEach(function(s){ if (s) io.observe(s); });
+
+document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+</script>
+</body>
+</html>

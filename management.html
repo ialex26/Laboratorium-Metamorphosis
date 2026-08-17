@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Management — Лаборатория Метаморфозиса</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg-deep: #090a0e;
+    --panel: #171a22;
+    --panel-2: #1c1f28;
+    --line: rgba(255,255,255,0.09);
+    --text: #eef1f6;
+    --text-dim: #aab1c2;
+    --text-dimmer: #6b7688;
+    --copper: #b0653a;
+    --cyan: #6fe0ff;
+    --cyan-soft: #8fe3ff;
+    --colA-rgb: 95,174,126;
+    --colB-rgb: 79,168,220;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; min-height: 100%;
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ===== 3D СЦЕНА (волны) ===== */
+  #scene-wrap {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+  #scene-wrap canvas { display: block; touch-action: none; }
+  #scene-wrap { cursor: grab; }
+  #scene-wrap.dragging { cursor: grabbing; }
+
+  #bg-glow {
+    position: fixed; inset: -10%; pointer-events: none; z-index: 1;
+    background:
+      radial-gradient(ellipse 55% 45% at 62% 40%, rgba(var(--colA-rgb),0.18), transparent 62%),
+      radial-gradient(ellipse 50% 42% at 28% 28%, rgba(var(--colB-rgb),0.14), transparent 65%),
+      radial-gradient(ellipse 75% 70% at 50% 58%, rgba(var(--colA-rgb),0.12), transparent 70%);
+    background-repeat: no-repeat;
+    animation: driftGlow 26s ease-in-out infinite alternate;
+    transition: background 0.6s linear;
+  }
+  @keyframes driftGlow {
+    0%   { background-position: 0% 0%,   0% 0%,   0% 0%;   opacity:0.82; }
+    50%  { background-position: 4% 3%,  -3% -3%,  2% 1%;   opacity:1;    }
+    100% { background-position: -3% 4%,  3% -2%, -2% 2%;   opacity:0.88; }
+  }
+
+  /* тонкий переливающийся слой поверх сияния — та же живая палитра сфер,
+     но декоративный и медленно вращающийся, чтобы фон не был статичным */
+  #bg-shimmer {
+    position: fixed; z-index: 1; pointer-events: none;
+    left: 50%; top: 50%;
+    width: 160vmax; height: 160vmax;
+    transform: translate(-50%,-50%) rotate(0deg);
+    background: conic-gradient(from 0deg,
+      rgba(var(--colA-rgb),0.5),
+      rgba(var(--colB-rgb),0.5),
+      rgba(156,59,74,0.4),
+      rgba(var(--colA-rgb),0.5));
+    opacity: 0.13;
+    mix-blend-mode: screen;
+    filter: blur(3px);
+    animation: shimmerSpin 48s linear infinite;
+  }
+  @keyframes shimmerSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  #vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 2;
+    background: radial-gradient(ellipse 80% 75% at 50% 55%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 82%, rgba(0,0,0,0.85) 100%);
+  }
+
+  /* ===== FLOATING DRAWER (как в index.html) ===== */
+  .drawer {
+    position: fixed;
+    left: 0; top: 50%;
+    transform: translate(-100%, -50%);
+    width: min(20vw, 340px);
+    min-width: 280px;
+    max-height: 90vh;
+    z-index: 10;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    filter: drop-shadow(22px 26px 46px rgba(0,0,0,0.42)) drop-shadow(0 0 34px rgba(0,0,0,0.22));
+  }
+  .drawer.open { transform: translate(0, -50%); }
+
+  .drawer-panel {
+    flex: 1;
+    min-width: 0;
+    border-radius: 0 20px 20px 0;
+    padding: 30px 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: linear-gradient(160deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+    backdrop-filter: blur(26px) saturate(165%);
+    -webkit-backdrop-filter: blur(26px) saturate(165%);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-right: none;
+    position: relative;
+  }
+  .drawer-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(125deg,
+      rgba(255,255,255,0) 32%,
+      rgba(255,255,255,0.05) 47%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.05) 53%,
+      rgba(255,255,255,0) 68%);
+    background-size: 280% 280%;
+    animation: panelSheen 10s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes panelSheen {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+  }
+
+  .drawer-tab {
+    position: absolute;
+    right: -36px; top: 50%;
+    transform: translateY(-50%);
+    width: 36px; height: 68px;
+    border-radius: 0 16px 16px 0; 
+    background: linear-gradient(160deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04));
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-left: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .drawer-arrow {
+    width: 0; height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 9px solid rgba(232,238,248,0.9);
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .drawer.open .drawer-arrow { transform: rotate(180deg); }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+  }
+
+  /* ===== ВЕРХНИЙ ЗАГОЛОВОК (как в index.html) ===== */
+  .top-header {
+    position: fixed;
+    left: 40px; top: 36px;
+    z-index: 5;
+    max-width: 640px;
+    pointer-events: none;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* ===== ЛОГОТИП (3D-эмблема) ===== */
+  .logo-badge {
+    position: relative;
+    width: 76px; height: 76px;
+    flex-shrink: 0;
+    perspective: 640px;
+    pointer-events: auto;
+  }
+  .badge-dome {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(64% 60% at 30% 24%, rgba(255,255,255,0.40), rgba(255,255,255,0.04) 55%),
+      radial-gradient(90% 90% at 72% 82%, rgba(0,0,0,0.30), rgba(0,0,0,0) 60%),
+      linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+    backdrop-filter: blur(9px) saturate(160%);
+    -webkit-backdrop-filter: blur(9px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.22);
+    box-shadow:
+      inset 0 3px 7px rgba(255,255,255,0.30),
+      inset 0 -7px 15px rgba(0,0,0,0.50),
+      inset 5px 0 10px rgba(0,0,0,0.18),
+      inset -5px 0 10px rgba(0,0,0,0.18),
+      0 8px 20px rgba(0,0,0,0.38);
+  }
+  .badge-rim {
+    position: absolute; inset: -3px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
+    pointer-events: none;
+  }
+  .logo-coin {
+    position: absolute;
+    inset: 8px;
+    transform-style: preserve-3d;
+    animation: coinSpin 60s linear infinite;
+  }
+  @keyframes coinSpin {
+    0%   { transform: rotateY(0deg); }
+    7%   { transform: rotateY(720deg); }
+    100% { transform: rotateY(720deg); }
+  }
+  .coin-face {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+  .coin-front { transform: rotateY(0deg) translateZ(0.6px); }
+  .coin-back  { transform: rotateY(180deg) translateZ(0.6px); }
+  .coin-face svg {
+    width: 86%; height: 86%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));
+  }
+  .coin-sheen {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 24%, rgba(255,255,255,0.55), transparent 55%);
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  .title-placeholder {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    color: transparent;
+    background: linear-gradient(100deg,
+      #eaf2ff 0%, #dfe7ff 12%, #e6d9ff 24%, #f3d9ee 36%,
+      #ffe0e6 48%, #fff0da 60%, #dff5ea 72%, #dbeeff 86%, #eaf2ff 100%);
+    background-size: 320% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 0.4px rgba(255,255,255,0.45);
+    text-shadow:
+      0 1px 0 rgba(255,255,255,0.35),
+      0 2px 0 rgba(255,255,255,0.18),
+      0 3px 2px rgba(0,0,0,0.20),
+      0 6px 16px rgba(0,0,0,0.35);
+    animation: titleSheen 9s ease-in-out infinite alternate;
+    display: inline-block;
+  }
+  @keyframes titleSheen {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+  .liquid-letter {
+    display: inline-block;
+    animation: liquidLetter 2.8s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * 0.06s);
+    will-change: transform;
+  }
+  @keyframes liquidLetter {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+  .tagline {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text-dim);
+    margin: 0;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.6);
+  }
+
+  /* ===== КАРТОЧКИ ===== */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card-row {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* Капсула-эликсир (как в index.html) */
+  .card-bar-ext {
+    position: relative;
+    width: 26px;
+    flex-shrink: 0;
+  }
+  .card-bar-ext .elixir-glow {
+    position: absolute; inset: -12px;
+    border-radius: 999px;
+    background: var(--c1);
+    filter: blur(14px);
+    opacity: 0.11;
+    animation: elixirGlowPulse 6.5s ease-in-out infinite;
+    z-index: 0;
+  }
+  .capsule-body {
+    position: absolute; inset: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background:
+      repeating-linear-gradient(55deg,
+        rgba(255,255,255,0.24) 0 2px,
+        rgba(255,255,255,0) 2px 11px,
+        rgba(0,0,0,0.22) 11px 13px,
+        rgba(255,255,255,0) 13px 22px),
+      repeating-linear-gradient(-55deg,
+        rgba(255,255,255,0.16) 0 2px,
+        rgba(255,255,255,0) 2px 11px,
+        rgba(0,0,0,0.18) 11px 13px,
+        rgba(255,255,255,0) 13px 22px),
+      radial-gradient(60% 90% at 30% 50%, rgba(255,255,255,0.30), rgba(255,255,255,0) 65%),
+      linear-gradient(90deg, rgba(0,0,0,0.34) 0%, transparent 22%, transparent 78%, rgba(0,0,0,0.34) 100%),
+      linear-gradient(165deg, var(--c1), var(--c2));
+    background-size: 220% 220%, 220% 220%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0% 0%, 0% 0%, 0 0, 0 0, 0 0;
+    opacity: 0.22;
+    border: 1px solid rgba(255,255,255,0.20);
+    box-shadow:
+      inset 3px 0 6px rgba(0,0,0,0.35),
+      inset -3px 0 6px rgba(0,0,0,0.35);
+    z-index: 1;
+    animation: capsuleFacetLive 8s ease-in-out infinite;
+  }
+  @keyframes capsuleFacetLive {
+    0%, 100% { background-position: 0% 0%, 0% 0%, 0 0, 0 0, 0 0; }
+    50%      { background-position: 14% 20%, -14% -16%, 0 0, 0 0, 0 0; }
+  }
+  .card-bar-ext .elixir-sheen {
+    position: absolute;
+    left: 14%; top: 5%;
+    width: 20%; height: 90%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 60%);
+    opacity: 0.30;
+    z-index: 2;
+  }
+  .card-bar-ext .elixir-rim {
+    position: absolute; inset: 0;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), inset 0 0 10px rgba(255,255,255,0.05);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .card-bar-ext .bubble {
+    position: absolute;
+    left: 50%;
+    width: 5px; height: 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.55);
+    opacity: 0;
+    animation: elixirBubble linear infinite;
+    z-index: 2;
+  }
+  .card-bar-ext .bubble.b1 { left: 32%; width: 4px; height: 4px; animation-duration: 6.5s; animation-delay: 0.4s; }
+  .card-bar-ext .bubble.b2 { left: 60%; width: 6px; height: 6px; animation-duration: 8s; animation-delay: 2.4s; }
+  .card-bar-ext .bubble.b3 { left: 46%; width: 3px; height: 3px; animation-duration: 5.5s; animation-delay: 4.1s; }
+
+  @keyframes elixirGlowPulse {
+    0%, 100% { opacity: 0.08; }
+    50%      { opacity: 0.15; }
+  }
+  @keyframes elixirBubble {
+    0%   { bottom: 4%; opacity: 0; transform: translateX(0); }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.5; }
+    100% { bottom: 92%; opacity: 0; transform: translateX(3px); }
+  }
+
+  /* Карточка — перламутровое стекло */
+  .card {
+    position: relative;
+    flex: 1;
+    border-radius: 14px;
+    padding: 14px 18px;
+    min-height: 66px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    overflow: visible;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.35),
+      0 2px 8px rgba(0,0,0,0.20),
+      inset 0 1px 0 rgba(255,255,255,0.18),
+      inset 0 -2px 8px rgba(0,0,0,0.12),
+      0 8px 32px rgba(74,143,228,0.06);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.95);
+  }
+  .card-title {
+    position: relative;
+    z-index: 2;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    letter-spacing: 0.02em;
+  }
+  .card-desc {
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.45);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Перламутровая граница */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    padding: 1px;
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.35) 0%,
+      rgba(200,180,255,0.15) 20%,
+      rgba(74,143,228,0.20) 40%,
+      rgba(255,200,220,0.10) 60%,
+      rgba(143,197,255,0.18) 80%,
+      rgba(255,255,255,0.25) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    animation: borderGlow 5s ease-in-out infinite alternate;
+  }
+  @keyframes borderGlow {
+    0% { opacity: 0.4; }
+    100% { opacity: 1; }
+  }
+
+  /* Блик */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background:
+      radial-gradient(ellipse at 25% 20%, rgba(255,255,255,0.12), transparent 55%),
+      radial-gradient(ellipse at 75% 80%, rgba(143,197,255,0.06), transparent 50%);
+    pointer-events: none;
+    animation: sheenMove 8s ease-in-out infinite alternate;
+  }
+  @keyframes sheenMove {
+    0% { opacity: 0.4; background-position: 0% 0%, 0% 0%; }
+    100% { opacity: 0.9; background-position: 15% 10%, -10% 15%; }
+  }
+
+  /* Перелив */
+  .card .pearl-shift {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .card .pearl-shift::before {
+    content: '';
+    position: absolute;
+    inset: -100%;
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(74,143,228,0.15) 0%,
+      rgba(143,197,255,0.20) 12%,
+      rgba(200,180,255,0.12) 25%,
+      rgba(255,200,220,0.08) 38%,
+      rgba(143,197,255,0.18) 50%,
+      rgba(74,143,228,0.12) 62%,
+      rgba(200,180,255,0.10) 75%,
+      rgba(255,200,220,0.06) 88%,
+      rgba(74,143,228,0.15) 100%
+    );
+    animation: pearlShift 20s linear infinite;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  @keyframes pearlShift {
+    0% { transform: rotate(0deg) scale(1.8); }
+    100% { transform: rotate(360deg) scale(1.8); }
+  }
+
+  /* Светящийся край */
+  .card .edge-glow {
+    position: absolute;
+    inset: -3px;
+    border-radius: 17px;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(74,143,228,0.15), transparent 40%),
+      radial-gradient(ellipse at 80% 70%, rgba(143,197,255,0.10), transparent 35%);
+    filter: blur(10px);
+    opacity: 0.5;
+    pointer-events: none;
+    animation: edgePulse 4s ease-in-out infinite alternate;
+    z-index: -1;
+  }
+  @keyframes edgePulse {
+    0% { opacity: 0.3; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.03); }
+  }
+
+  /* Hover */
+  .card:hover {
+    transform: translateY(-3px) scale(1.005);
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow:
+      0 16px 48px rgba(0,0,0,0.40),
+      0 4px 16px rgba(0,0,0,0.20),
+      inset 0 1px 0 rgba(255,255,255,0.22),
+      inset 0 -2px 8px rgba(0,0,0,0.12),
+      0 12px 40px rgba(74,143,228,0.10);
+  }
+
+  /* Кнопка "На главную" вместо тумблера */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+  }
+
+  .home-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 30px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .home-button:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.25);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .home-icon {
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.8;
+    transition: transform 0.3s ease;
+  }
+
+  .home-button:hover .home-icon {
+    transform: translateX(-3px);
+  }
+  .toggle-label {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-dimmer);
+  }
+  .toggle-switch {
+    position: relative;
+    width: 42px; height: 24px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .toggle-switch.on {
+    background: rgba(159,216,255,0.32);
+    border-color: rgba(159,216,255,0.55);
+  }
+  .toggle-knob {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #e8eef8;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .toggle-switch.on .toggle-knob {
+    transform: translateX(18px);
+  }
+
+  @media (max-height: 720px) {
+    .drawer { max-height: 94vh; }
+    .drawer-panel { padding: 18px 20px; }
+    header { margin-bottom: 14px; }
+    .cards { gap: 9px; }
+    .card { padding: 10px 14px; min-height: 56px; }
+  }
+  @media (max-width: 640px) {
+    .drawer { width: min(84vw, 340px); }
+    .top-header { left: 18px; top: 18px; }
+    .title-placeholder { font-size: 18px; }
+    .logo-badge { width: 56px; height: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 3D СЦЕНА (волны) ===== -->
+<div id="scene-wrap"></div>
+<div id="bg-glow"></div>
+<div id="bg-shimmer"></div>
+<div id="vignette"></div>
+
+<!-- ===== ВЕРХНИЙ ЗАГОЛОВОК ===== -->
+<div class="top-header">
+  <header>
+    <div class="logo-badge" id="logoBadge">
+      <div class="badge-dome"></div>
+      <div class="badge-rim"></div>
+      <div class="logo-coin">
+        <div class="coin-face coin-front">
+          <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.6353 12C18.9055 12 18.4214 12.7564 18.7271 13.4189L24.0923 25.0342C24.4499 25.8084 25.5501 25.8084 25.9077 25.0342L31.2729 13.4189C31.5786 12.7564 31.0945 12 30.3647 12H36.3999C37.1364 12.0003 37.6197 12.7698 37.3003 13.4336L25.9009 37.127C25.5375 37.8822 24.4625 37.8822 24.0991 37.127L12.6997 13.4336C12.3803 12.7698 12.8635 12.0002 13.6001 12H19.6353Z" fill="#eef1f6"/>
+            <circle cx="25" cy="17" r="2" fill="#eef1f6"/>
+            <path d="M10 16.2361C10 15.1808 11.4225 14.845 11.8944 15.7889L16.8944 25.7889C16.9639 25.9277 17 26.0808 17 26.2361V37C17 37.5523 16.5523 38 16 38H11C10.4477 38 10 37.5523 10 37V16.2361Z" fill="#eef1f6"/>
+            <path d="M40 16.2361C40 15.1808 38.5775 14.845 38.1056 15.7889L33.1056 25.7889C33.0361 25.9277 33 26.0808 33 26.2361V37C33 37.5523 33.4477 38 34 38H39C39.5523 38 40 37.5523 40 37V16.2361Z" fill="#eef1f6"/>
+            <circle opacity="0.25" cx="25" cy="25" r="24.5" fill="none" stroke="#eef1f6" stroke-width="1.5"/>
+          </svg>
+          <div class="coin-sheen"></div>
+        </div>
+        <div class="coin-face coin-back">
+          <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.6353 12C18.9055 12 18.4214 12.7564 18.7271 13.4189L24.0923 25.0342C24.4499 25.8084 25.5501 25.8084 25.9077 25.0342L31.2729 13.4189C31.5786 12.7564 31.0945 12 30.3647 12H36.3999C37.1364 12.0003 37.6197 12.7698 37.3003 13.4336L25.9009 37.127C25.5375 37.8822 24.4625 37.8822 24.0991 37.127L12.6997 13.4336C12.3803 12.7698 12.8635 12.0002 13.6001 12H19.6353Z" fill="#241a14"/>
+            <circle cx="25" cy="17" r="2" fill="#241a14"/>
+            <path d="M10 16.2361C10 15.1808 11.4225 14.845 11.8944 15.7889L16.8944 25.7889C16.9639 25.9277 17 26.0808 17 26.2361V37C17 37.5523 16.5523 38 16 38H11C10.4477 38 10 37.5523 10 37V16.2361Z" fill="#241a14"/>
+            <path d="M40 16.2361C40 15.1808 38.5775 14.845 38.1056 15.7889L33.1056 25.7889C33.0361 25.9277 33 26.0808 33 26.2361V37C33 37.5523 33.4477 38 34 38H39C39.5523 38 40 37.5523 40 37V16.2361Z" fill="#241a14"/>
+            <circle opacity="0.35" cx="25" cy="25" r="24.5" fill="none" stroke="#b0653a" stroke-width="1.5"/>
+          </svg>
+          <div class="coin-sheen"></div>
+        </div>
+      </div>
+    </div>
+    <div class="title-placeholder" id="titleText">Лаборатория Метаморфозиса</div>
+  </header>
+</div>
+
+<!-- ===== FLOATING DRAWER ===== -->
+<div class="drawer open" id="drawer">
+  <div class="drawer-panel">
+    <div class="content">
+      <div class="cards">
+
+        <!-- Талант-менеджмент -->
+        <div class="card-row">
+          <div class="card-bar-ext" style="--c1:#2D7A5A; --c2:#8BC8A8;"><div class="elixir-glow"></div><div class="capsule-body"><div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div><div class="elixir-sheen"></div><div class="elixir-rim"></div></div></div>
+          <div class="card" data-href="talent-management.html">
+            <div class="card-title">Talent-management</div>
+          </div>
+        </div>
+
+        <!-- Перформенс-ревью -->
+        <div class="card-row">
+          <div class="card-bar-ext" style="--c1:#3B7A9E; --c2:#A8D0E8;"><div class="elixir-glow"></div><div class="capsule-body"><div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div><div class="elixir-sheen"></div><div class="elixir-rim"></div></div></div>
+          <div class="card" data-href="performance-review.html">
+            <div class="card-title">Performance-review</div>
+          </div>
+        </div>
+
+        <!-- Перформенс-менеджмент -->
+        <div class="card-row">
+          <div class="card-bar-ext" style="--c1:#b5652d; --c2:#f2dfd0;"><div class="elixir-glow"></div><div class="capsule-body"><div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div><div class="elixir-sheen"></div><div class="elixir-rim"></div></div></div>
+          <div class="card" data-href="performance-management.html">
+            <div class="card-title">Performance-management</div>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <a href="index.html" class="home-button">
+            <span class="home-icon">←</span>
+            На главную
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="drawer-tab" id="drawerTab">
+    <div class="drawer-arrow"></div>
+  </div>
+</div>
+
+<!-- ===== THREE.JS ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- ===== 3D ВОЛНЫ (полностью перенесено из wave_field — копия 2.html) ===== -->
+<script>
+(function(){
+
+  // ============================================================
+  //  3D СЦЕНА — концепт «Диалог»: две сферы, переливающийся пучок
+  //  нитей между ними, вращение курсором + авто-вращение.
+  //  Перенесено из Концепт_диалог_Three_js.html, без изменений в
+  //  логике — только точка монтирования (#scene-wrap вместо
+  //  #canvas-wrap, чтобы встать в уже готовый фон/виньетку страницы).
+  // ============================================================
+
+  init();
+
+  function init(){
+  var wrap = document.getElementById('scene-wrap');
+  function W(){ return window.innerWidth; }
+  function H(){ return window.innerHeight; }
+
+  var scene = new THREE.Scene();
+
+  var camera = new THREE.PerspectiveCamera(38, W()/H(), 0.1, 200);
+  camera.position.set(0, 4, 62);
+  camera.lookAt(0,0,0);
+
+  var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W(), H());
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  wrap.appendChild(renderer.domElement);
+
+  window.addEventListener('resize', function(){
+    camera.aspect = W()/H();
+    camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
+  });
+
+  // ---------------- lighting ----------------
+  var ambientLight = new THREE.AmbientLight(0x2a3a5a, 1.5);
+  scene.add(ambientLight);
+
+  var hemi = new THREE.HemisphereLight(0x8fe3ff, 0x0a1020, 0.55);
+  scene.add(hemi);
+
+  var keyLight = new THREE.PointLight(0xffffff, 1.6, 120, 2);
+  keyLight.position.set(20, 24, 40);
+  scene.add(keyLight);
+
+  var backLightA = new THREE.PointLight(0x6fe0ff, 1.6, 100, 2);
+  backLightA.position.set(-30, 10, -30);
+  scene.add(backLightA);
+
+  var backLightB = new THREE.PointLight(0x9c3b4a, 1.2, 100, 2);
+  backLightB.position.set(30, -6, -30);
+  scene.add(backLightB);
+
+  var fillLight = new THREE.DirectionalLight(0x4a7aaa, 0.5);
+  fillLight.position.set(-10, -10, 20);
+  scene.add(fillLight);
+
+  // ---------------- colour / tension state (identical logic to the SVG prototype) ----------------
+  var COLORS = {
+    green:    [95, 174, 126],
+    blue:     [79, 168, 220],
+    burgundy: [156, 59, 74],
+  };
+  var TENSION_VALUE = { green: 0.25, blue: 0.55, burgundy: 1.2 }; // drives wave amplitude: calm = small, tense = large
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function lerpColor(c1,c2,t){ return [lerp(c1[0],c2[0],t), lerp(c1[1],c2[1],t), lerp(c1[2],c2[2],t)]; }
+
+  var tensionSchedule = [
+    { dur:3.0, a:'green',    b:'green' },
+    { dur:3.0, a:'blue',     b:'green' },
+    { dur:3.0, a:'burgundy', b:'blue' },
+    { dur:3.0, a:'burgundy', b:'burgundy' },
+    { dur:3.0, a:'blue',     b:'burgundy' },
+    { dur:3.0, a:'green',    b:'blue' },
+  ];
+  var tensionTotal = tensionSchedule.reduce(function(s,x){return s+x.dur;},0);
+  function targetColors(t){
+    var tt = t % tensionTotal;
+    for (var i=0;i<tensionSchedule.length;i++){
+      var seg = tensionSchedule[i];
+      if (tt < seg.dur) return { a:COLORS[seg.a], b:COLORS[seg.b], ta:TENSION_VALUE[seg.a], tb:TENSION_VALUE[seg.b] };
+      tt -= seg.dur;
+    }
+    return { a:COLORS.green, b:COLORS.green, ta:TENSION_VALUE.green, tb:TENSION_VALUE.green };
+  }
+  var curColorA = COLORS.green.slice();
+  var curColorB = COLORS.green.slice();
+  var curTensionA = TENSION_VALUE.green, curTensionB = TENSION_VALUE.green;
+
+  var speakSchedule = [
+    { dur:2.0, who:'a' }, { dur:0.5, who:'pause' },
+    { dur:1.6, who:'b' }, { dur:0.5, who:'pause' },
+    { dur:1.2, who:'a' }, { dur:0.4, who:'pause' },
+    { dur:2.2, who:'b' }, { dur:0.6, who:'pause' },
+  ];
+  var speakTotal = speakSchedule.reduce(function(s,x){return s+x.dur;},0);
+  function currentSpeaker(t){
+    var tt = t % speakTotal;
+    for (var i=0;i<speakSchedule.length;i++){
+      var seg = speakSchedule[i];
+      if (tt < seg.dur) return { who:seg.who, progress: tt/seg.dur };
+      tt -= seg.dur;
+    }
+    return { who:'pause', progress:0 };
+  }
+  function envelope(p){ return Math.sin(Math.PI * Math.min(Math.max(p,0),1)); }
+  var smoothA = 0, smoothB = 0;
+
+  // ---------------- geometry set up ----------------
+  var AX = 16;              // half-distance between the two spheres along X
+  var SPHERE_R = 3.64;      // was 5.2 — 30% smaller
+  var FLOOR_Y = -12;
+
+  var group = new THREE.Group();
+  scene.add(group);
+
+  // glass sphere material — clean and very transparent, no separate "pearlescent" overlay layer:
+  // softness comes from lighting response (clearcoat + roughness), not from an extra texture
+  function makeSphereMaterial(emissiveHex){
+    return new THREE.MeshPhysicalMaterial({
+      color: 0x5fae7e,
+      transparent: true,
+      opacity: 0.16,
+      roughness: 0.28,
+      metalness: 0.0,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.35,
+      emissive: emissiveHex,
+      emissiveIntensity: 0.09,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+  }
+  var sphereGeo = new THREE.SphereGeometry(SPHERE_R, 64, 48);
+  var matA = makeSphereMaterial(0x2f5a3f);
+  var matB = makeSphereMaterial(0x1a4a63);
+  var sphereA = new THREE.Mesh(sphereGeo, matA);
+  var sphereB = new THREE.Mesh(sphereGeo, matB);
+  group.add(sphereA);
+  group.add(sphereB);
+
+  // faceted wireframe shell — same technique as the molecular model's satellite zones,
+  // gives a genuine "this sphere is rotating" cue without a floating highlight blob
+  function makeWireframe(baseColorHex){
+    var geo = new THREE.SphereGeometry(SPHERE_R*1.008, 40, 30);
+    var mat = new THREE.MeshBasicMaterial({
+      color: baseColorHex,
+      transparent: true,
+      opacity: 0.14,
+      wireframe: true,
+      depthWrite: false,
+    });
+    return new THREE.Mesh(geo, mat);
+  }
+  var wireA = makeWireframe(0x5fae7e);
+  var wireB = makeWireframe(0x4fa8dc);
+  group.add(wireA); group.add(wireB);
+
+  // soft contact-shadow discs on the floor (canvas radial-gradient texture)
+  function makeShadowTexture(){
+    var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    var ctx = c.getContext('2d');
+    var g = ctx.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0, 'rgba(0,0,0,0.55)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,128,128);
+    return new THREE.CanvasTexture(c);
+  }
+  var shadowTex = makeShadowTexture();
+  function makeShadowDisc(){
+    var geo = new THREE.PlaneGeometry(SPHERE_R*2.6, SPHERE_R*2.6);
+    var mat = new THREE.MeshBasicMaterial({ map:shadowTex, transparent:true, depthWrite:false });
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = -Math.PI/2;
+    return mesh;
+  }
+  var shadowA = makeShadowDisc(); var shadowB = makeShadowDisc();
+  group.add(shadowA); group.add(shadowB);
+
+  // impact glow (colour flash on contact) — additive disc, same placement as shadow
+  function makeGlowTexture(){
+    var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    var ctx = c.getContext('2d');
+    var g = ctx.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0, 'rgba(255,255,255,0.9)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,128,128);
+    return new THREE.CanvasTexture(c);
+  }
+  var glowTex = makeGlowTexture();
+  function makeGlowDisc(){
+    var geo = new THREE.PlaneGeometry(SPHERE_R*3.0, SPHERE_R*3.0);
+    var mat = new THREE.MeshBasicMaterial({ map:glowTex, color:0x5fae7e, transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false });
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = -Math.PI/2;
+    mesh.position.y = FLOOR_Y + 0.02;
+    return mesh;
+  }
+  var glowA = makeGlowDisc(); var glowB = makeGlowDisc();
+  group.add(glowA); group.add(glowB);
+
+  // energy-bundle glow at the point where the strands converge (small offset from each sphere)
+  function makeOriginGlow(colorHex){
+    var mat = new THREE.SpriteMaterial({
+      map: glowTex, color: colorHex, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false,
+    });
+    var spr = new THREE.Sprite(mat);
+    spr.scale.set(2.6, 2.6, 1);
+    group.add(spr);
+    return spr;
+  }
+  var originGlowA = makeOriginGlow(0x5fae7e);
+  var originGlowB = makeOriginGlow(0x4fa8dc);
+
+  // thin floor line (very subtle, just enough to read "surface")
+  var floorGeo = new THREE.PlaneGeometry(80, 40);
+  var floorMat = new THREE.MeshBasicMaterial({ color:0x8fb3c0, transparent:true, opacity:0.035, side:THREE.DoubleSide });
+  var floorPlane = new THREE.Mesh(floorGeo, floorMat);
+  floorPlane.rotation.x = -Math.PI/2;
+  floorPlane.position.y = FLOOR_Y;
+  group.add(floorPlane);
+
+  // ---------------- 20 strands, arranged around the A-B axis in real 3D ----------------
+  var STRAND_COUNT = 30, SEGMENTS = 90, RADIAL_SEGMENTS = 8;
+  var STRAND_GAP = 1.1; // small offset from the sphere surface where strands converge to one point
+  var STRAND_X0 = -AX + SPHERE_R + STRAND_GAP;
+  var STRAND_X1 =  AX - SPHERE_R - STRAND_GAP;
+  function rand(seed){ return function(){ seed = (seed*16807) % 2147483647; return (seed-1)/2147483646; }; }
+  var rnd = rand(42);
+  var strands = [];
+  for (var i=0;i<STRAND_COUNT;i++){
+    // half the bundle fans toward +Y ("up"), the other half toward -Y ("down") — two opposing wings,
+    // but loosely, not braided: wide jitter so each wing spreads into a messy fan, not a tight pair of ropes
+    var wingSign = (i < STRAND_COUNT/2) ? 1 : -1;
+    var wingJitter = (rnd()-0.5) * 2.3;
+    var angle0 = wingSign * Math.PI/2 + wingJitter;
+
+    var pts0 = [];
+    for (var k=0;k<=SEGMENTS;k++) pts0.push(new THREE.Vector3(lerp(STRAND_X0,STRAND_X1,k/SEGMENTS), 0, 0));
+    var curve0 = new THREE.CatmullRomCurve3(pts0);
+    var tubeRadius = 0.045 + rnd()*0.035;
+    var geo = new THREE.TubeGeometry(curve0, SEGMENTS, tubeRadius, RADIAL_SEGMENTS, false);
+    var ringCount = SEGMENTS+1, vertsPerRing = RADIAL_SEGMENTS+1;
+    var colorArray = new Float32Array(ringCount*vertsPerRing*3);
+    geo.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+    var mat = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.62,
+      roughness: 0.45,
+      metalness: 0.0,
+      emissiveIntensity: 0.0,
+      depthWrite: false,
+    });
+    var mesh = new THREE.Mesh(geo, mat);
+    group.add(mesh);
+    strands.push({
+      angle0: angle0,
+      baseRadius: 1.3 + rnd()*1.5,     // wider spread — no longer a tight braided pair
+      freq: 1.8 + rnd()*3.6,           // more undulations — livelier
+      speed: 0.7 + rnd()*2.1,          // faster drift — more motion
+      freq2: 3 + rnd()*5,              // secondary faster wobble layered on top — less mechanical, more chaotic
+      speed2: 1.5 + rnd()*3,
+      phase2: rnd()*Math.PI*2,
+      chatterPhase: rnd()*Math.PI*2,
+      chatterSpeed: 8 + rnd()*9,       // fast micro-flicker, like syllables in speech
+      phase: rnd()*Math.PI*2,
+      ampMul: 1.0 + rnd()*1.6,         // stronger amplitude overall — aggression
+      wA: 0.3 + rnd()*0.9,
+      wB: 0.3 + rnd()*0.9,
+      hum: 0.14 + rnd()*0.14,
+      tubeRadius: tubeRadius,
+      ringCount: ringCount,
+      vertsPerRing: vertsPerRing,
+      mesh: mesh,
+      pointsCache: pts0,
+    });
+  }
+
+  // ---------------- rotation: same drag pattern as the molecular model ----------------
+  var dragging = false, lastX = 0, lastY = 0;
+  var AUTO_SPIN = 0.0009; // rad/frame idle turntable spin (slow, ~full turn in ~110s)
+
+  function pointerDown(x,y){ dragging = true; lastX = x; lastY = y; wrap.classList.add('dragging'); }
+  function pointerMove(x,y){
+    if (!dragging) return;
+    var dx = x - lastX, dy = y - lastY;
+    lastX = x; lastY = y;
+    group.rotation.y += dx * 0.0055;
+    group.rotation.x += dy * 0.0055;
+    group.rotation.x = Math.max(-1.1, Math.min(1.1, group.rotation.x));
+  }
+  function pointerUp(){ dragging = false; wrap.classList.remove('dragging'); }
+
+  wrap.addEventListener('mousedown', function(e){ pointerDown(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', function(e){ pointerMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', pointerUp);
+  wrap.addEventListener('touchstart', function(e){ var t=e.touches[0]; pointerDown(t.clientX, t.clientY); }, {passive:true});
+  wrap.addEventListener('touchmove', function(e){ var t=e.touches[0]; pointerMove(t.clientX, t.clientY); }, {passive:true});
+  wrap.addEventListener('touchend', pointerUp);
+
+  // ---------------- animation loop ----------------
+  var startTime = performance.now();
+  var bobPhaseA = rnd()*Math.PI*2, bobPhaseB = rnd()*Math.PI*2;
+  var bobSpeedA = 0.55 + rnd()*0.25, bobSpeedB = 0.5 + rnd()*0.25;
+  var HOP_AMP = 2.3;
+
+  function colToHex(c){ return (Math.round(c[0])<<16) | (Math.round(c[1])<<8) | Math.round(c[2]); }
+
+  function animate(now){
+    var t = (now - startTime)/1000;
+
+    if (!dragging){ group.rotation.y += AUTO_SPIN; }
+
+    var tgt = targetColors(t);
+    curColorA = lerpColor(curColorA, tgt.a, 0.02);
+    curColorB = lerpColor(curColorB, tgt.b, 0.02);
+    curTensionA = lerp(curTensionA, tgt.ta, 0.02);
+    curTensionB = lerp(curTensionB, tgt.tb, 0.02);
+    matA.color.setHex(colToHex(curColorA));
+    matB.color.setHex(colToHex(curColorB));
+
+    // фон (сияние + переливающийся слой) читает те же цвета, что и сферы —
+    // обновляем не каждый кадр, а раз в ~4, этого достаточно для плавности глазу
+    if (Math.floor(t*60) % 4 === 0){
+      var root = document.documentElement.style;
+      root.setProperty('--colA-rgb', Math.round(curColorA[0])+','+Math.round(curColorA[1])+','+Math.round(curColorA[2]));
+      root.setProperty('--colB-rgb', Math.round(curColorB[0])+','+Math.round(curColorB[1])+','+Math.round(curColorB[2]));
+    }
+    matA.emissive.setHex(colToHex(lerpColor(curColorA,[0,0,0],0.55)));
+    matB.emissive.setHex(colToHex(lerpColor(curColorB,[0,0,0],0.55)));
+
+    var sp = currentSpeaker(t);
+    var env = envelope(sp.progress);
+    var targetSmoothA = sp.who==='a' ? env : 0;
+    var targetSmoothB = sp.who==='b' ? env : 0;
+    smoothA += (targetSmoothA - smoothA)*0.10;
+    smoothB += (targetSmoothB - smoothB)*0.10;
+
+    // continuous glow via emissiveIntensity pulse (no hard on/off — avoids blinking)
+    matA.emissiveIntensity = 0.08 + smoothA*0.5;
+    matB.emissiveIntensity = 0.08 + smoothB*0.5;
+
+    // bounce (gravity-like hop) + squash/stretch, real 3D translation & scale
+    var rawA = Math.sin(t*bobSpeedA + bobPhaseA);
+    var rawB = Math.sin(t*bobSpeedB + bobPhaseB);
+    var bobA = Math.pow(Math.abs(rawA), 0.72) * HOP_AMP;
+    var bobB = Math.pow(Math.abs(rawB), 0.72) * HOP_AMP;
+    var yA = FLOOR_Y + SPHERE_R + bobA;
+    var yB = FLOOR_Y + SPHERE_R + bobB;
+
+    var impactA = Math.max(0, 1 - Math.abs(rawA)*5);
+    var impactB = Math.max(0, 1 - Math.abs(rawB)*5);
+    var scaleYA = 1 - impactA*0.16, scaleXZA = 1 + impactA*0.12;
+    var scaleYB = 1 - impactB*0.16, scaleXZB = 1 + impactB*0.12;
+
+    sphereA.position.set(-AX, yA, 0);
+    sphereB.position.set(AX, yB, 0);
+    sphereA.scale.set(scaleXZA, scaleYA, scaleXZA);
+    sphereB.scale.set(scaleXZB, scaleYB, scaleXZB);
+
+    shadowA.position.set(-AX, FLOOR_Y+0.01, 0);
+    shadowB.position.set(AX, FLOOR_Y+0.01, 0);
+    shadowA.material.opacity = 0.5 * (1 - Math.min(1,bobA/HOP_AMP)*0.6);
+    shadowB.material.opacity = 0.5 * (1 - Math.min(1,bobB/HOP_AMP)*0.6);
+
+    glowA.position.set(-AX, FLOOR_Y+0.02, 0);
+    glowB.position.set(AX, FLOOR_Y+0.02, 0);
+    glowA.material.color.setHex(colToHex(curColorA));
+    glowB.material.color.setHex(colToHex(curColorB));
+    glowA.material.opacity = impactA*0.75;
+    glowB.material.opacity = impactB*0.75;
+
+    // energy-bundle glow at the strand origin points — brighter when that side speaks or tension is high
+    originGlowA.position.set(STRAND_X0, yA, 0);
+    originGlowB.position.set(STRAND_X1, yB, 0);
+    originGlowA.material.color.setHex(colToHex(curColorA));
+    originGlowB.material.color.setHex(colToHex(curColorB));
+    var pulseA = 0.55 + smoothA*0.6 + (curTensionA-0.25)*0.18;
+    var pulseB = 0.55 + smoothB*0.6 + (curTensionB-0.25)*0.18;
+    originGlowA.material.opacity = Math.min(1, pulseA);
+    originGlowB.material.opacity = Math.min(1, pulseB);
+    originGlowA.scale.setScalar(2.2 + smoothA*0.9);
+    originGlowB.scale.setScalar(2.2 + smoothB*0.9);
+
+    // wireframe shells follow their sphere's position/scale, spin slowly on their own axis
+    wireA.position.copy(sphereA.position);
+    wireB.position.copy(sphereB.position);
+    wireA.scale.copy(sphereA.scale);
+    wireB.scale.copy(sphereB.scale);
+    wireA.rotation.y += 0.0022; wireA.rotation.x += 0.0009;
+    wireB.rotation.y -= 0.0018; wireB.rotation.x += 0.0011;
+    wireA.material.color.setHex(colToHex(curColorA));
+    wireB.material.color.setHex(colToHex(curColorB));
+
+    // strands: soft 3D bundle between the two spheres, rebuilt as smooth tubes each frame,
+    // colour genuinely flows from A's current colour to B's current colour along the length
+    for (var s=0; s<strands.length; s++){
+      var st = strands[s];
+      var pts = st.pointsCache;
+      for (var seg=0; seg<=SEGMENTS; seg++){
+        var f = seg/SEGMENTS;
+        var x = lerp(STRAND_X0, STRAND_X1, f);
+        var baseY = lerp(yA, yB, f);
+
+        var falloffA = Math.max(0, 1 - f*1.2);
+        var falloffB = Math.max(0, 1 - (1-f)*1.2);
+        var speakAmp = (smoothA*st.wA*falloffA + smoothB*st.wB*falloffB) * 1.3;
+
+        // voice-like micro-flicker on top of the slow drift — bursts, not a clean sine
+        var chatter = 0.6 + 0.4*Math.abs(Math.sin(t*st.chatterSpeed + st.chatterPhase + f*5));
+
+        // amplitude follows the tension colour along the strand: calm/green = small, tense/burgundy = large
+        var tensionAtF = lerp(curTensionA, curTensionB, f);
+
+        var wobble1 = Math.sin(f*st.freq*Math.PI*2 + st.phase + t*st.speed);
+        var wobble2 = Math.sin(f*st.freq2*Math.PI*2 + st.phase2 + t*st.speed2) * 0.55;
+        var wobble = (wobble1 + wobble2)
+                     * (st.hum + speakAmp) * st.ampMul * chatter * tensionAtF;
+        var radius = st.baseRadius * (0.6 + 0.4*tensionAtF) + wobble;
+
+        var angle = st.angle0;
+        var envShape = Math.sin(f*Math.PI); // 0 at both ends — strands truly converge to a single point
+        var py = baseY + radius * Math.sin(angle) * envShape;
+        var pz = radius * Math.cos(angle) * envShape;
+
+        pts[seg].set(x, py, pz);
+      }
+      var curve = new THREE.CatmullRomCurve3(pts);
+      var newGeo = new THREE.TubeGeometry(curve, SEGMENTS, st.tubeRadius, RADIAL_SEGMENTS, false);
+
+      // paint a smooth colour gradient along the tube: A's colour -> B's colour
+      var colorArray = new Float32Array(st.ringCount*st.vertsPerRing*3);
+      newGeo.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+      var arr = colorArray;
+      for (var ring=0; ring<st.ringCount; ring++){
+        var f2 = ring/(st.ringCount-1);
+        var mixT = 0.5 + (f2-0.5)*0.94; // mostly A at the start, mostly B at the end
+        var c = lerpColor(curColorA, curColorB, mixT);
+        var r = c[0]/255, g = c[1]/255, b = c[2]/255;
+        for (var vv=0; vv<st.vertsPerRing; vv++){
+          var idx = (ring*st.vertsPerRing + vv)*3;
+          arr[idx]=r; arr[idx+1]=g; arr[idx+2]=b;
+        }
+      }
+
+      st.mesh.geometry.dispose();
+      st.mesh.geometry = newGeo;
+    }
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+  }
+
+})();
+</script>
+
+<!-- ===== СКРИПТЫ ДЛЯ УПРАВЛЕНИЯ ===== -->
+<script>
+  // Переключение drawer
+  (function(){
+    var drawer = document.getElementById('drawer');
+    var tab = document.getElementById('drawerTab');
+    tab.addEventListener('click', function(){
+      drawer.classList.toggle('open');
+    });
+  })();
+
+  // Переход по клику на карточки
+  (function(){
+    document.querySelectorAll('.card[data-href]').forEach(function(card){
+      card.addEventListener('click', function(){
+        window.location.href = card.getAttribute('data-href');
+      });
+    });
+  })();
+
+  // Разбивка названия на буквы для эффекта "жидкого" волнового покачивания
+  (function(){
+    var el = document.getElementById('titleText');
+    if(!el) return;
+    var text = el.textContent.trim();
+    el.textContent = '';
+    Array.from(text).forEach(function(ch, i){
+      var span = document.createElement('span');
+      span.className = 'liquid-letter';
+      span.style.setProperty('--i', i);
+      span.textContent = (ch === ' ') ? '\u00A0' : ch;
+      el.appendChild(span);
+    });
+  })();
+
+  // Случайная палитра для капсул
+  (function() {
+    const colorPalette = [
+      { c1: '#3EC6E0', c2: '#8FE3FF' },
+      { c1: '#3EAA6D', c2: '#8FE3B0' },
+      { c1: '#D6A93B', c2: '#F3D98A' },
+      { c1: '#C1554A', c2: '#EE9A8E' },
+      { c1: '#8B6FE0', c2: '#C4B4FF' },
+      { c1: '#B0653A', c2: '#E3A26F' },
+      { c1: '#D9B26A', c2: '#F0D9A0' },
+      { c1: '#4A8FE4', c2: '#8FC5FF' },
+      { c1: '#D97A9B', c2: '#F2B8CC' },
+      { c1: '#6ABF7A', c2: '#A8E0B5' },
+      { c1: '#E88A5A', c2: '#F5C8A8' },
+      { c1: '#7A9EC4', c2: '#B8D4E8' },
+      { c1: '#C49A6C', c2: '#E8D0B8' },
+      { c1: '#A87AC4', c2: '#D4B8E8' },
+      { c1: '#6CB8A0', c2: '#B8E8D4' },
+    ];
+    const capsuleWrappers = document.querySelectorAll('.card-bar-ext');
+    const shuffled = [...colorPalette];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    capsuleWrappers.forEach((el, index) => {
+      const color = shuffled[index % shuffled.length];
+      el.style.setProperty('--c1', color.c1);
+      el.style.setProperty('--c2', color.c2);
+    });
+  })();
+</script>
+
+</body>
+</html>

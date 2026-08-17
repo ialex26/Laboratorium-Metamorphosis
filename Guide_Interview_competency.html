@@ -444,6 +444,20 @@ details.small-acc .acc-body{padding:14px 16px 4px;}
 
 /* form styling (Приложение 1 / 4) */
 .form-card{padding:26px 28px; border-radius:var(--radius-lg); background:var(--glass-fill-strong); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow-soft); margin-bottom:22px;}
+
+/* attachment on/off toggles (report appendices) */
+.attach-toggle{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px;
+  border-radius:var(--radius-md); background:var(--glass-fill-strong); border:1px solid var(--glass-border); margin-bottom:14px;}
+.attach-toggle-label{display:flex; align-items:center; gap:12px; font-weight:700; color:var(--ink-900); font-size:14px; cursor:pointer;}
+.attach-toggle-label .at-icon{width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg, var(--violet-100), var(--teal-100)); color:var(--violet-600); flex:none; font-size:15px;}
+.switch{position:relative; display:inline-block; width:44px; height:26px; flex:none;}
+.switch input{opacity:0; width:0; height:0; position:absolute;}
+.switch .slider{position:absolute; inset:0; background:#d3d7e6; border-radius:999px; transition:.2s; cursor:pointer;}
+.switch .slider::before{content:''; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.switch input:checked + .slider{background:linear-gradient(135deg, var(--violet-500), var(--teal-500));}
+.switch input:checked + .slider::before{transform:translateX(18px);}
+
 .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; margin-bottom:6px;}
 .form-field label{display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--violet-600); font-weight:700; margin-bottom:6px;}
 .form-field .line{height:36px; border-bottom:2px dotted rgba(140,150,190,.5);}
@@ -591,6 +605,21 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
 
 /* ============ print ============ */
 @media print{
+  /* root cause of the "invisible/thin border" issue across the document:
+     the glass-morphism palette below is translucent WHITE, designed to sit on the
+     colored screen background. On a white printed page that becomes white-on-white.
+     Redefining these variables here cascades a visible, consistent fix to every
+     component that uses them (.callout, blockquote, .comp-card, etc.) without
+     needing a per-component patch. */
+  :root{
+    --glass-fill:#f6f7fb;
+    --glass-fill-strong:#ffffff;
+    --glass-border:#d8dceb;
+    --glass-shadow:none;
+    --glass-shadow-soft:none;
+    --glass-inset:none;
+    --bg-0:#ffffff;
+  }
   @page{ size:A4; margin:11mm 10mm; }
   html{scroll-padding-top:0;}
   /* CRITICAL: force every background/colour to print regardless of the
@@ -612,6 +641,16 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
   .line-textarea{border:1px solid #d8dceb; font-size:8.5pt; min-height:34pt;}
 
   /* accordions: forced open via JS (beforeprint) — style as flat sections */
+  /* force a clean new sheet before these sections, per content rules:
+     the STAR technique, the competency model, the question bank, and every appendix
+     each start their own page rather than beginning mid-page with a near-empty tail above. */
+  .page-start{break-before:page; page-break-before:always;}
+
+  /* Приложение 2 and Приложение 3: one competency per page, so its title never separates
+     from its own content. Приложение 1 (screen-only) and Приложение 4 (short blank-line
+     protocol, many per page) are intentionally excluded — forcing a page each there would
+     waste paper. */
+  #app2 .comp-accordion:not(:first-of-type), #app3 .comp-accordion:not(:first-of-type){break-before:page; page-break-before:always;}
   .comp-accordion{border:none; background:none; margin-bottom:10pt; break-inside:auto;}
   .comp-accordion summary{
     background:linear-gradient(120deg, var(--violet-100), var(--teal-100)) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -623,6 +662,9 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
 
   /* Приложение 2: model grid -> 2 columns to save space, smaller text */
   .mk-bullet .mk-level-grid{grid-template-columns:repeat(2,1fr); gap:5pt;}
+  /* the 5th level (Деструктор) is always alone in the last row of the 2-col grid —
+     stretch it to the full block width instead of leaving half the row empty. */
+  .mk-bullet .mk-level-grid .mk-level:last-child{grid-column:1/-1;}
   .mk-level{padding:5pt 6pt; break-inside:avoid; border:1px solid #e3e6f2; background:#fbfbfe !important;}
   .mk-level-badge{margin-bottom:3pt;}
   .mk-level-name{font-size:6.4pt;}
@@ -654,13 +696,15 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
 
   /* ---- hero ---- */
   .hero{margin:0 0 10pt; padding:14pt 16pt; border-radius:9pt; box-shadow:none; break-inside:avoid;
+    background:linear-gradient(120deg, #8b7fd6, #2fb8ac 55%, #f1a08b) !important;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  .hero::after{display:none !important;}
   .hero-inner{gap:14pt;}
-  .hero-badge{font-size:7.3pt; padding:3pt 9pt;}
-  .hero h1{font-size:17pt; margin:8pt 0 5pt;}
-  .hero p.sub{font-size:8.6pt; margin:0 0 10pt;}
-  .hero-orb{width:52px;height:52px;}
-  .hero-orb i{font-size:22px;}
+  .hero-badge{font-size:7.3pt; padding:3pt 9pt; background:rgba(255,255,255,.22) !important; border:1px solid rgba(255,255,255,.4) !important;}
+  .hero h1{font-size:17pt; margin:8pt 0 6pt; text-shadow:none !important;}
+  .hero p.sub{font-size:8.6pt; margin:2pt 0 10pt; color:rgba(255,255,255,.95) !important;}
+  .hero-orb{width:52px;height:52px; background:linear-gradient(135deg, rgba(123,110,205,.95), rgba(47,184,172,.9)) !important; border:1.3pt solid rgba(255,255,255,.65) !important; backdrop-filter:none !important; box-shadow:none !important;}
+  .hero-orb i{font-size:22px; color:#fff !important;}
   .hero-meta{gap:14pt; font-size:7.5pt;}
   .hero-meta b{font-size:11pt;}
 
@@ -673,13 +717,21 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
   .card-icon{width:24pt; height:24pt; border-radius:8pt; font-size:11pt; box-shadow:none; border:1px solid #e3e6f2;}
   .card-icon i{font-size:10pt;}
 
-  .appendix-strip{gap:5pt; margin-bottom:5pt;}
+  .appendix-strip{display:none !important;}
   .appendix-chip{flex:1 1 90px; padding:6pt 8pt; font-size:7.4pt; border-radius:8pt; box-shadow:none;}
   .appendix-chip span{font-size:6.3pt; margin-bottom:1pt;}
 
   .comp-grid{grid-template-columns:repeat(2,1fr); gap:7pt; align-items:start;}
+  /* competency #9 (Партнерство) is always alone in the last row of the 9-card, 2-col
+     overview grid — stretch it full-width instead of leaving half the row empty. */
+  .model-grid-9 .comp-card:last-child{grid-column:1/-1;}
   [style*="grid-template-columns"]{align-items:start !important;}
   .comp-card{break-inside:avoid; background:#fff !important; box-shadow:none; border:1px solid #d8dceb; padding:9pt 10pt; gap:5pt;}
+  /* the 5-card "Проведение интервью" layout uses spanning grid-areas (card 3 spans 2 rows) which
+     confuses print pagination and can split a card across pages. Simplify to plain 2-col auto-flow
+     for print so each card is an independent, whole, unspannable fragment. */
+  .interview-grid{grid-template-areas:none !important; grid-template-columns:1fr 1fr !important;}
+  .interview-grid .ig-1,.interview-grid .ig-2,.interview-grid .ig-3,.interview-grid .ig-4,.interview-grid .ig-5{grid-area:auto !important;}
   .comp-num{width:16pt; height:16pt; font-size:8pt; border-radius:5pt;}
   .comp-card h4{font-size:9.3pt;}
   .comp-card p{font-size:8pt;}
@@ -814,7 +866,7 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
     <div class="toc-title">Содержание</div>
     <nav><ul><li><a href="#vvedenie">Введение</a></li><li><a href="#cel">Цель интервью</a></li><li><a href="#ponyatie">Понятие компетенции</a></li><li><a href="#podgotovka">Подготовка к интервью</a></li><li><a href="#provedenie">Проведение интервью</a></li><li><a href="#star">Техника STAR</a></li><li><a href="#vstuplenie">Вступление к интервью</a></li><li><a href="#opisanie">Описание компетенций</a></li><li><a href="#voprosy">Вопросы для интервью</a></li><li><a href="#shkala">Шкала соответствия</a></li><li><a href="#zavershenie">Завершение интервью</a></li><li><a href="#analiz">Анализ итогов и оценка</a></li></ul>
     <div class="toc-title" style="margin-top:18px;">Приложения</div>
-    <ul><li><a href="#app1"><span class="toc-app-badge">Прил. 1</span>Оценочный лист</a></li><li><a href="#app2"><span class="toc-app-badge">Прил. 2</span>Модель компетенций</a></li><li><a href="#app3"><span class="toc-app-badge">Прил. 3</span>Вопросы для интервью</a></li><li><a href="#app4"><span class="toc-app-badge">Прил. 4</span>Протокол интервьюера</a></li><li><a href="#app5"><span class="toc-app-badge">Прил. 5</span>Форма отчёта</a></li><li><a href="#rekom"><span class="toc-app-badge">Далее</span>Рекомендации по развитию</a></li></ul></nav>
+    <ul><li><a href="#app1"><span class="toc-app-badge">Прил. 1</span>Оценочный лист</a></li><li><a href="#app2"><span class="toc-app-badge">Прил. 2</span>Модель компетенций</a></li><li><a href="#app3"><span class="toc-app-badge">Прил. 3</span>Вопросы для интервью</a></li><li><a href="#app4"><span class="toc-app-badge">Прил. 4</span>Протокол интервьюера</a></li><li><a href="#app5"><span class="toc-app-badge">Прил. 5</span>Форма отчёта</a></li><li><a href="#rekom"><span class="toc-app-badge">Прил. 5</span>Рекомендации по развитию</a></li></ul></nav>
     </aside>
   <main class="main-col">
 
@@ -844,13 +896,13 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
 сильнее поднять уровень его волнения. Поэтому мы предлагаем разделить цель интервью на две — для интервьюера и для
 интервьюируемого. Опираясь на это, мы можем сказать интервьюируемому, что цель нашей встречи — познакомиться ближе
 и понять, какой опыт он получил за последнее время.</p>
-<div class="legend-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-  <div class="callout info">
+<div class="legend-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:stretch;">
+  <div class="callout info" style="height:100%; box-sizing:border-box; margin-bottom:0;">
     <div class="callout-title"><i class="fa-solid fa-microphone"></i> Для интервьюера</div>
     Определение уровня развития интересующих компанию компетенций у сотрудника и сопоставление выявленного уровня
     с профилем должности.
   </div>
-  <div class="callout warn">
+  <div class="callout warn" style="height:100%; box-sizing:border-box; margin-bottom:0;">
     <div class="callout-title"><i class="fa-solid fa-handshake"></i> Для интервьюируемого</div>
     Знакомство представителя (рекрутера) с кандидатом для обмена информацией и формирования понимания
     о возможном дальнейшем сотрудничестве (внешний кандидат) или дальнейшем карьерном развитии (внутренний сотрудник).
@@ -871,28 +923,25 @@ hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:22px 0;}
 </div>
 
 <p>Вот как раскрывают термин «компетенция» известные консалтинговые компании:</p>
-<div class="comp-grid" style="grid-template-columns:1fr 1fr 1fr;">
-  <div class="comp-card">
+<div class="comp-grid" style="grid-template-columns:1fr 1fr 1fr; align-items:stretch;">
+  <div class="comp-card" style="height:100%; box-sizing:border-box;">
     <h4>Hay Group / Spencer &amp; Spencer</h4>
     <p>Компетенция — базовое, устойчивое качество личности, причинно связанное с эффективным и/или наилучшим
     исполнением работы по определённым критериям; глубинная характеристика, предопределяющая поведение человека
     в разных рабочих ситуациях.</p>
   </div>
-  <div class="comp-card">
+  <div class="comp-card" style="height:100%; box-sizing:border-box;">
     <h4>SHL</h4>
     <p>Компетенция — набор наблюдаемых поведенческих индикаторов, объединённых в единый блок; такие блоки,
     собранные в общую структуру, образуют модель компетенций и напрямую связываются с эффективным поведением
     сотрудника на конкретной должности.</p>
   </div>
-  <div class="comp-card">
+  <div class="comp-card" style="height:100%; box-sizing:border-box;">
     <h4>Korn Ferry / Lominger</h4>
     <p>Компетенция — измеримая и развиваемая поведенческая характеристика, прогнозирующая результативность
     сотрудника; служит общим языком для подбора, оценки и развития персонала на всех уровнях управления.</p>
   </div>
 </div>
-<p>Обобщая эти подходы, в данном пособии мы формулируем это так: <strong>компетенция</strong> — индивидуальное,
-интегральное качество личности, наблюдаемое в поведении и определяющее эффективное и/или наилучшее исполнение
-работы.</p>
 </section>
 
 
@@ -956,7 +1005,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="star" class="card ">
+<section id="star" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-star"></i></div>
       <div class="section-head-text"><div class="eyebrow">06 · Технология интервьюирования</div><h2>Метод — STAR</h2></div>
@@ -1034,14 +1083,14 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="opisanie" class="card ">
+<section id="opisanie" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-compass"></i></div>
       <div class="section-head-text"><div class="eyebrow">08 · Модель компетенций</div><h2>Описание компетенций</h2></div>
     </div>
 <p>Девять компетенций, составляющих модель оценки. Полные индикаторы поведения по уровням — в
 <a href="#app1">Приложении 1</a> и <a href="#app2">Приложении 2</a>.</p>
-<div class="comp-grid">
+<div class="comp-grid model-grid-9">
 <div class="comp-card">
           <div class="comp-num">1</div>
           <h4>Ответственность за результат</h4>
@@ -1088,7 +1137,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="voprosy" class="card ">
+<section id="voprosy" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-circle-question"></i></div>
       <div class="section-head-text"><div class="eyebrow">09 · Как задавать вопросы</div><h2>Вопросы для интервью по компетенциям</h2></div>
@@ -1292,7 +1341,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="app1" class="card ">
+<section id="app1" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
       <div class="section-head-text"><div class="eyebrow">Приложение 1</div><h2>Оценочный лист</h2></div>
@@ -1318,17 +1367,11 @@ Hard-навыками, а не Soft. Установление уровня вы�
   </div>
 </div>
 
-<div class="legend-row">
-  <span class="score-chip score-l0">0,0; 0,5</span><span style="align-self:center; font-size:13px; color:var(--ink-500);">не соответствует ожиданиям (уровень некомпетентности)</span>
-</div>
-<div class="legend-row">
-  <span class="score-chip score-l1">1,0; 1,5</span><span style="align-self:center; font-size:13px; color:var(--ink-500);">требуются улучшения (уровень освоения, развития)</span>
-</div>
-<div class="legend-row">
-  <span class="score-chip score-l2">2,0; 2,5</span><span style="align-self:center; font-size:13px; color:var(--ink-500);">соответствует ожиданиям (уровень опыта)</span>
-</div>
-<div class="legend-row">
-  <span class="score-chip score-l3">3</span><span style="align-self:center; font-size:13px; color:var(--ink-500);">превосходит ожидания (уровень лидерства)</span>
+<div class="rep-scale-row">
+  <div class="rep-scale-item"><span class="score-chip score-l0">0,0; 0,5</span><span>не соответствует ожиданиям (уровень некомпетентности)</span></div>
+  <div class="rep-scale-item"><span class="score-chip score-l1">1,0; 1,5</span><span>требуются улучшения (уровень освоения, развития)</span></div>
+  <div class="rep-scale-item"><span class="score-chip score-l2">2,0; 2,5</span><span>соответствует ожиданиям (уровень опыта)</span></div>
+  <div class="rep-scale-item"><span class="score-chip score-l3">3</span><span>превосходит ожидания (уровень лидерства)</span></div>
 </div>
 
 <div class="callout info">
@@ -1496,7 +1539,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="app2" class="card ">
+<section id="app2" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-diagram-project"></i></div>
       <div class="section-head-text"><div class="eyebrow">Приложение 2</div><h2>Модель компетенций</h2></div>
@@ -2023,7 +2066,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="app3" class="card ">
+<section id="app3" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-folder-open"></i></div>
       <div class="section-head-text"><div class="eyebrow">Приложение 3</div><h2>Вопросы для интервью</h2></div>
@@ -2179,7 +2222,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="app4" class="card ">
+<section id="app4" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-pen-to-square"></i></div>
       <div class="section-head-text"><div class="eyebrow">Приложение 4</div><h2>Протокол интервьюера</h2></div>
@@ -2316,7 +2359,7 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </section>
 
 
-<section id="app5" class="card ">
+<section id="app5" class="card page-start">
 <div class="section-head">
       <div class="card-icon"><i class="fa-solid fa-file-lines"></i></div>
       <div class="section-head-text"><div class="eyebrow">Приложение 5</div><h2>Форма отчёта</h2></div>
@@ -2412,8 +2455,22 @@ Hard-навыками, а не Soft. Установление уровня вы�
 </div>
 
 <hr class="div"/>
-<h3 style="font-size:17px;">Дополнительно: ожидаемое компанией поведение</h3>
-<p style="font-size:13.5px; color:var(--ink-500); margin-top:-8px;">Развёрнутое описание того, как выглядит развитая компетенция в поведении сотрудника — можно приложить к отчёту как справочный материал.</p>
+<h3 style="font-size:18px; margin-bottom:4px;">Приложения к отчёту</h3>
+<p style="font-size:13.5px; color:var(--ink-500); margin-top:0;">Необязательные материалы — включите переключателем то, что хотите приложить к отчёту заказчику. Включённые блоки отражаются и на экране, и при печати; выключенные не печатаются.</p>
+
+<div class="attach-toggle">
+  <label class="attach-toggle-label" for="tgl-behavior">
+    <span class="at-icon"><i class="fa-solid fa-user-check"></i></span>
+    Приложение 1 · Ожидаемое Компанией поведение сотрудника
+  </label>
+  <label class="switch screen-only">
+    <input type="checkbox" id="tgl-behavior" checked onchange="document.getElementById('attach-behavior').style.display = this.checked ? '' : 'none';">
+    <span class="slider"></span>
+  </label>
+</div>
+<div id="attach-behavior">
+<h4 style="font-size:15.5px; margin:0 0 4px;">Приложение 1. Ожидаемое Компанией поведение сотрудника</h4>
+<p style="font-size:13.5px; color:var(--ink-500); margin-top:-2px;">Развёрнутое описание того, как выглядит развитая компетенция в поведении сотрудника — можно приложить к отчёту как справочный материал.</p>
 <details class="comp-accordion small-acc">
           <summary><span class="acc-num">01</span><span class="acc-title">Ответственность за результат</span><i class="fa-solid fa-chevron-down acc-caret"></i></summary>
           <div class="acc-body"><p style="font-size:13.5px;">Компетенция ответственность за результат проявляется в развитом навыке правильной постановки цели, умении верно её сформулировать, настойчивости её достижения, а в случае возникновения препятствий — их преодоление. Немаловажным является выдвижение требований к качеству полученного результата как у себя, так и у других. Прежде всего требовательность по отношению к себе и своей деятельности, и только затем можно повышать требовательность к другим. Компетенция подразумевает готовность браться за новую работу, за решение трудных задач, требующих высокой отдачи, и принятие ответственности за проделанную работу — как свою, так и своего коллектива.</p></div>
@@ -2442,21 +2499,28 @@ Hard-навыками, а не Soft. Установление уровня вы�
           <summary><span class="acc-num">09</span><span class="acc-title">Партнерство</span><i class="fa-solid fa-chevron-down acc-caret"></i></summary>
           <div class="acc-body"><p style="font-size:13.5px;">Сотрудник с высоким уровнем развития этой компетенции выстраивает и поддерживает долгосрочные, доверительные отношения с широким кругом людей для решения рабочих задач, уверенно чувствует себя в общении с сотрудниками разного статуса. Придерживается принципов взаимовыгодного сотрудничества, соотнося потребности сторон с интересами компании. Своевременно удовлетворяет запросы участников взаимодействия, использует индивидуальный подход к разным партнёрам, умеет отстаивать свои границы и распознавать предпосылки конфликта до его начала.</p></div>
         </details>
-</section>
+</div>
 
-
-<section id="rekom" class="card ">
-<div class="section-head">
-      <div class="card-icon"><i class="fa-solid fa-seedling"></i></div>
-      <div class="section-head-text"><div class="eyebrow">Далее</div><h2>Рекомендации по развитию управленческих компетенций</h2></div>
-    </div>
-<p>Подумайте, развитие каких компетенций позволит Вам достигать лучших результатов в работе?</p>
-<p>Оцените свою готовность заниматься развитием конкретной компетенции по шкале от 1 до 10.</p>
+<hr class="div"/>
+<div class="attach-toggle">
+  <label class="attach-toggle-label" for="tgl-recom">
+    <span class="at-icon"><i class="fa-solid fa-seedling"></i></span>
+    Приложение 2 · Рекомендации по развитию
+  </label>
+  <label class="switch screen-only">
+    <input type="checkbox" id="tgl-recom" checked onchange="document.getElementById('attach-recom').style.display = this.checked ? '' : 'none';">
+    <span class="slider"></span>
+  </label>
+</div>
+<div id="attach-recom">
+<h4 style="font-size:15.5px; margin:0 0 4px;" id="rekom">Приложение 2. Рекомендации по развитию управленческих компетенций</h4>
+<p style="font-size:13.5px; margin-top:-2px;">Подумайте, развитие каких компетенций позволит Вам достигать лучших результатов в работе?</p>
+<p style="font-size:13.5px;">Оцените свою готовность заниматься развитием конкретной компетенции по шкале от 1 до 10.</p>
 <ul class="bullet-list"><li>Если готовность выше 7 — прочитайте внимательно те наблюдения, которые отмечены в зоне силы, и те, которые требуют внимания. Определите наиболее значимые для Вас аспекты и определите действия, которые Вы начнёте делать прямо сегодня.</li><li>Если готовность ниже 7 — выберите другую компетенцию или подумайте, что может повысить Вашу мотивацию, какую пользу принесёт развитие данного навыка.</li></ul>
-<p>Для развития компетенций полезно будет составить индивидуальный план развития (ИПР), с помощью которого Вы
+<p style="font-size:13.5px;">Для развития компетенций полезно будет составить индивидуальный план развития (ИПР), с помощью которого Вы
 определите возможные области развития, цели и конкретные мероприятия по развитию компетенций. В планировании
 индивидуального развития и составлении ИПР Вам может помочь специалист по обучению и развитию персонала.</p>
-<p>Для развития компетенции очень полезно работать с ментором (бизнес-учителем) — человеком, который является для Вас
+<p style="font-size:13.5px;">Для развития компетенции очень полезно работать с ментором (бизнес-учителем) — человеком, который является для Вас
 ролевой моделью в проявлении компетенции, которую Вы планируете развивать. Человека, на чьём примере Вы можете учиться.</p>
 <div class="callout info">
   <div class="callout-title"><i class="fa-solid fa-circle-check"></i> При выборе действий по развитию компетенции</div>
@@ -2464,9 +2528,16 @@ Hard-навыками, а не Soft. Установление уровня вы�
   деятельность. То, что мы смотрим, читаем, видим у других, позволяет узнать новые успешные модели поведения, но,
   чтобы они стали «нашими», их необходимо пробовать делать самостоятельно.
 </div>
+<div class="callout warn">
+  <div class="callout-title"><i class="fa-solid fa-triangle-exclamation"></i> Материал не полный</div>
+  Здесь приведена только общая инструкция по работе с рекомендациями. Полный банк рекомендаций по развитию
+  каждой из 9 компетенций (конкретные действия «прочитать», «посмотреть», «сделать на рабочем месте» и активные
+  ссылки на материалы) нужно перенести из исходного Excel-файла — пришлите его, и я заполню этот блок целиком.
+</div>
+</div>
 </section>
 
-  
+
 <footer>
   <div>© 2025 КСК · Ключевые системы и компоненты — методическое пособие «Интервью по компетенциям»</div>
   <div class="contacts">

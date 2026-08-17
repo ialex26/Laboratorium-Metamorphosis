@@ -82,6 +82,7 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px;margin-top:1
 .hero .orb1{width:130px;height:130px;background:radial-gradient(circle at 35% 30%,#eafffb,var(--teal) 60%,transparent 100%);top:18%;left:8%;}
 .hero .orb2{width:70px;height:70px;background:radial-gradient(circle at 35% 30%,#eafffb,var(--teal-dim) 60%,transparent 100%);bottom:14%;right:12%;opacity:.6;}
 .hero .ring{position:absolute;border:1px solid rgba(255,255,255,.14);border-radius:50%;width:520px;height:520px;top:50%;left:50%;transform:translate(-50%,-50%);}
+.hero .orb-ring{display:none;}
 .hero-inner{position:relative;z-index:2;}
 .hero .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700;margin:0 0 14px;}
 .hero h1{margin:0 auto 14px;font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.01em;max-width:16ch;line-height:1.15;}
@@ -90,7 +91,14 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px;margin-top:1
 
 /* section shell */
 .sec{padding:30px 32px;scroll-margin-top:90px;}
-.sec-head{margin-bottom:6px;}
+.sec-head{margin-bottom:6px;display:flex;align-items:flex-start;gap:13px;}
+.sec-icon{flex:none;width:38px;height:38px;border-radius:11px;margin-top:1px;
+  background:linear-gradient(155deg,rgba(79,214,201,.16),rgba(240,184,104,.10));
+  border:1px solid rgba(79,214,201,.28);display:flex;align-items:center;justify-content:center;}
+.sec-icon svg{width:19px;height:19px;fill:none;stroke:var(--teal);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.sec-head-txt{min-width:0;flex:1;}
+.sec-head-txt .sec-eyebrow{margin:0 0 4px;}
+.sec-head-txt h2{margin:0;}
 .sec-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--teal);letter-spacing:.06em;margin:0 0 6px;}
 .sec-head h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.01em;}
 .sec-head .sub{color:var(--text-1);font-size:13.5px;margin-top:6px;max-width:70ch;}
@@ -104,6 +112,10 @@ h4.h{font-size:13px;font-weight:700;margin:0 0 8px;color:var(--text-1);text-tran
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .card{border:1px solid var(--border-soft);border-radius:16px;padding:16px 18px;background:rgba(255,255,255,.025);}
+.card.tint-teal{background:linear-gradient(155deg,rgba(79,214,201,.10),rgba(79,214,201,.02));border-color:rgba(79,214,201,.22);}
+.card.tint-gold{background:linear-gradient(155deg,rgba(240,184,104,.12),rgba(240,184,104,.02));border-color:rgba(240,184,104,.24);}
+.card.tint-sky{background:linear-gradient(155deg,rgba(125,180,255,.10),rgba(125,180,255,.02));border-color:rgba(125,180,255,.22);}
+.card.tint-rose{background:linear-gradient(155deg,rgba(239,127,155,.10),rgba(239,127,155,.02));border-color:rgba(239,127,155,.22);}
 .card.good{border-color:rgba(79,214,201,.3);background:rgba(79,214,201,.06);}
 .card.bad{border-color:rgba(239,127,155,.3);background:rgba(239,127,155,.06);}
 .chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--border-soft);font-size:12.5px;font-weight:600;color:var(--text-0);}
@@ -117,6 +129,7 @@ h4.h{font-size:13px;font-weight:700;margin:0 0 8px;color:var(--text-1);text-tran
 
 /* accordion */
 .acc{border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);}
+.acc summary{background:linear-gradient(155deg,rgba(79,214,201,.09),rgba(79,214,201,.015));}
 .acc + .acc{margin-top:8px;}
 .acc summary{cursor:pointer;list-style:none;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:700;color:var(--text-0);}
 .acc summary::-webkit-details-marker{display:none;}
@@ -138,7 +151,7 @@ ol.steps li::before{content:counter(step);position:absolute;left:0;top:5px;width
 /* tables */
 .tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border-soft);}
 table.dtbl{width:100%;border-collapse:collapse;font-size:12.8px;min-width:520px;}
-table.dtbl th{text-align:left;padding:11px 14px;background:rgba(255,255,255,.05);color:var(--text-1);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border-soft);}
+table.dtbl th{text-align:left;padding:11px 14px;background:linear-gradient(155deg,rgba(79,214,201,.09),rgba(79,214,201,.02));color:var(--text-1);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border-soft);}
 table.dtbl td{padding:10px 14px;border-bottom:1px solid var(--border-soft);color:var(--text-0);vertical-align:top;}
 table.dtbl tr:last-child td{border-bottom:none;}
 table.dtbl td.dim{color:var(--text-1);}
@@ -200,7 +213,7 @@ table.heat td.lvl{color:var(--text-1);}
 
 
 /* case cards */
-.case{border:1px solid var(--border-soft);border-radius:16px;padding:18px 20px;background:rgba(255,255,255,.025);}
+.case{border:1px solid var(--border-soft);border-radius:16px;padding:18px 20px;background:linear-gradient(155deg,rgba(79,214,201,.06),rgba(79,214,201,.01));}
 .case h4{margin:0 0 8px;font-size:13.5px;color:var(--teal);font-weight:800;}
 .case .task{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(240,184,104,.08);border:1px solid rgba(240,184,104,.22);font-size:12.5px;color:var(--text-0);}
 .case .data{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-1);margin:6px 0;}
@@ -247,17 +260,20 @@ table.heat td.lvl{color:var(--text-1);}
 @media print{
   @page{ size:A4; margin:14mm 12mm; }
 
-  /* surfaces: swap the dark glass palette for a printable light one via the same custom properties */
+  /* surfaces: swap the dark glass palette for a printable light one via the same custom properties.
+     accent hues are deepened (not just lightened-background) so teal/gold/rose/sky text and bullets
+     stay readable at real AA contrast on white paper, instead of the pale screen tones. */
   :root{
     --bg-0:#ffffff; --bg-1:#ffffff; --bg-2:#ffffff;
     --glass:#f4f7f6; --glass-strong:#eef2f1; --glass-hover:#eef2f1;
-    --border:#c7cfcd; --border-soft:#d9e1df;
-    --text-0:#14201e; --text-1:#42524f; --text-2:#5f6f6c;
+    --border:#c7cfcd; --border-soft:#dbe3e1;
+    --text-0:#141f1d; --text-1:#414f4c; --text-2:#5e6d6a;
+    --teal:#0e7d70; --teal-dim:#0a5f56; --gold:#a3690f; --rose:#b13458; --sky:#2557a8;
     --shadow-glass:none;
   }
   *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
-  html,body{ background:#fff !important; color:#14201e !important; }
-  a{ color:#0e6b62 !important; text-decoration:none; }
+  html,body{ background:#fff !important; color:#141f1d !important; }
+  a{ color:#0e7d70 !important; text-decoration:none; }
 
   /* hide interactive-only chrome */
   .ambient,.topbar,.sidenav,#progress{ display:none !important; }
@@ -271,13 +287,36 @@ table.heat td.lvl{color:var(--text-1);}
     border-color:var(--border) !important;
   }
 
-  /* title page stays as its own sheet, always shown in full */
-  .hero{ background:#0a1a19 !important; color:#fff !important; border-radius:14px !important; padding:40px 28px !important; page-break-after:always; break-after:page; }
-  .hero *{ color:#fff !important; }
-  .hero h1{ font-size:26px !important; }
-  .hero .ring{ width:380px !important; height:380px !important; }
-  .foot-hero{ background:#0a1a19 !important; color:#fff !important; border-radius:14px !important; page-break-inside:avoid; break-inside:avoid; }
-  .foot-hero *{ color:#fff !important; }
+  /* title page: a light, ink-conscious cover instead of a solid dark fill -
+     thin gradient wash + a slim two-tone accent rule + outline rings (no heavy filled orbs) */
+  .hero{
+    background:linear-gradient(135deg,#eef9f6 0%,#ffffff 55%,#fdf7ec 100%) !important;
+    color:#141f1d !important; border:1.3px solid rgba(14,125,112,.28) !important;
+    border-radius:16px !important; padding:34px 30px 28px !important;
+    page-break-after:always; break-after:page; position:relative; overflow:hidden;
+  }
+  .hero::before{ content:''; position:absolute; top:0; left:0; right:0; height:5px;
+    background:linear-gradient(90deg,#0e7d70,#c98a1f); }
+  .hero *{ color:inherit !important; }
+  .hero .eyebrow{ color:#0e7d70 !important; }
+  .hero p{ color:#4d5a57 !important; }
+  .hero .year{ color:#7c8c88 !important; }
+  .hero h1{ font-size:25px !important; }
+  .hero .ring{ width:340px !important; height:340px !important; border:1.3px solid rgba(14,125,112,.16) !important; background:none !important; }
+  .hero .orb{ display:none !important; }
+  .hero .orb-ring{ display:block !important; position:absolute; width:170px; height:170px; border-radius:50%;
+    border:1.3px solid rgba(201,138,31,.30); bottom:-46px; right:-34px; }
+
+  .foot-hero{
+    background:linear-gradient(135deg,#fdf7ec 0%,#ffffff 55%,#eef9f6 100%) !important;
+    color:#141f1d !important; border:1.3px solid rgba(14,125,112,.28) !important;
+    border-radius:16px !important; position:relative; overflow:hidden;
+    page-break-inside:avoid; break-inside:avoid;
+  }
+  .foot-hero::before{ content:''; position:absolute; top:0; left:0; right:0; height:5px;
+    background:linear-gradient(90deg,#c98a1f,#0e7d70); }
+  .foot-hero *{ color:#141f1d !important; }
+  .foot-hero p{ color:#7c8c88 !important; }
 
   /* compact, legible type scale for A4 */
   .sec-head h2{ font-size:16px !important; }
@@ -304,6 +343,7 @@ table.heat td.lvl{color:var(--text-1);}
   /* logical page breaks: never split an atomic block, never strand a heading */
   .sec{ page-break-inside:auto; }
   .sec-head, h2, h3, h4{ page-break-after:avoid; break-after:avoid; }
+  .sec-head{ page-break-inside:avoid; break-inside:avoid; }
   .card,.case,.acc,figure,.outline .oitem,.ninebox-wrap,.gauge-item,.mot-row,.scatter-card,
   tr,.chip,.tag,.divider,.keep-block{ page-break-inside:avoid; break-inside:avoid; }
   table{ page-break-inside:auto; }
@@ -402,6 +442,7 @@ table.heat td.lvl{color:var(--text-1);}
       <div class="ring"></div>
       <div class="orb orb1"></div>
       <div class="orb orb2"></div>
+      <div class="orb-ring"></div>
       <div class="hero-inner">
         <p class="eyebrow">Методология · комплексная оценка персонала</p>
         <h1>Анализ результатов оценки и формирование комплексных отчетов</h1>
@@ -413,9 +454,12 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 01 -->
     <section class="sec glass" id="s1">
       <div class="sec-head">
-        <p class="sec-eyebrow">01 / Постановка задачи</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor" stroke="none"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">01 / Постановка задачи</p>
         <h2>Предпосылки для составления качественного отчета</h2>
         <p class="sub">Определить цель и задачи, решаемые по ходу оценки персонала. Техническое задание — «спецификация» оценки.</p>
+        </div>
       </div>
       <div class="sec-body">
         <h3 class="h">Примеры вопросов заказчику перед началом проекта</h3>
@@ -436,54 +480,58 @@ table.heat td.lvl{color:var(--text-1);}
         </details>
 
         <div class="divider"></div>
-        <h3 class="h">Для чего используются разные инструменты оценки?</h3>
-        <p class="sub" style="margin:0 0 14px;">Все инструменты оценки персонала можно разбить на три подхода.</p>
-        <div class="grid3">
-          <div class="card">
-            <span class="tag teal">Экспертные</span>
-            <ul class="list" style="margin-top:10px;">
-              <li>Ассессмент-центр</li>
-              <li>Интервью по компетенциям</li>
-              <li>Интервью по мотивации</li>
-              <li>Интервью глубинное</li>
-              <li>Кейс-тесты</li>
-            </ul>
-          </div>
-          <div class="card">
-            <span class="tag gold">Психометрические</span>
-            <ul class="list" style="margin-top:10px;">
-              <li>Тесты способностей</li>
-              <li>Психологически-личностные опросники</li>
-            </ul>
-          </div>
-          <div class="card">
-            <span class="tag sky">Социометрические</span>
-            <ul class="list" style="margin-top:10px;">
-              <li>Опрос удовлетворенности и вовлеченности персонала</li>
-              <li>Опрос 360 градусов</li>
-              <li>Пульс опросы</li>
-              <li>Тематические опросы</li>
-            </ul>
+        <div class="keep-block">
+          <h3 class="h">Для чего используются разные инструменты оценки?</h3>
+          <p class="sub" style="margin:0 0 14px;">Все инструменты оценки персонала можно разбить на три подхода.</p>
+          <div class="grid3">
+            <div class="card tint-teal">
+              <span class="tag teal">Экспертные</span>
+              <ul class="list" style="margin-top:10px;">
+                <li>Ассессмент-центр</li>
+                <li>Интервью по компетенциям</li>
+                <li>Интервью по мотивации</li>
+                <li>Интервью глубинное</li>
+                <li>Кейс-тесты</li>
+              </ul>
+            </div>
+            <div class="card tint-gold">
+              <span class="tag gold">Психометрические</span>
+              <ul class="list" style="margin-top:10px;">
+                <li>Тесты способностей</li>
+                <li>Психологически-личностные опросники</li>
+              </ul>
+            </div>
+            <div class="card tint-sky">
+              <span class="tag sky">Социометрические</span>
+              <ul class="list" style="margin-top:10px;">
+                <li>Опрос удовлетворенности и вовлеченности персонала</li>
+                <li>Опрос 360 градусов</li>
+                <li>Пульс опросы</li>
+                <li>Тематические опросы</li>
+              </ul>
+            </div>
           </div>
         </div>
 
         <div class="divider"></div>
-        <h3 class="h">Инструмент → управленческие решения</h3>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr><th>Инструмент</th><th>Управленческие решения</th></tr></thead>
-            <tbody>
-              <tr><td>Ассессмент-центр</td><td class="dim">Кандидаты на повышение, кадровый резерв, планирование карьеры, назначение на ключевые позиции</td></tr>
-              <tr><td>Чек-лист эффективности</td><td class="dim">Корректировка KPI, премии/бонусы, планирование развития</td></tr>
-              <tr><td>Чек-лист проф. знаний</td><td class="dim">Допуск к работам, направление на обучение, пересмотр грейда</td></tr>
-              <tr><td>Интервью по компетенциям</td><td class="dim">Отбор при найме, соответствие культуре, потребности в развитии soft skills</td></tr>
-              <tr><td>Профессиональный тест</td><td class="dim">Технический отбор, аттестация, учебные программы</td></tr>
-              <tr><td>Кейс-тесты</td><td class="dim">Потребности в развитии soft skills, лидерский потенциал</td></tr>
-              <tr><td>Опросник мотивации</td><td class="dim">Индивидуальные мотивационные схемы, удержание, расширение функционала</td></tr>
-              <tr><td>Тесты способностей</td><td class="dim">Отбор на позиции с высокими когнитивными требованиями, прогноз скорости обучения</td></tr>
-              <tr><td>Психометрические тесты</td><td class="dim">Отбор на стрессовые позиции, формирование команд, риски адаптации</td></tr>
-            </tbody>
-          </table>
+        <div class="keep-block">
+          <h3 class="h">Инструмент → управленческие решения</h3>
+          <div class="tbl-wrap">
+            <table class="dtbl">
+              <thead><tr><th>Инструмент</th><th>Управленческие решения</th></tr></thead>
+              <tbody>
+                <tr><td>Ассессмент-центр</td><td class="dim">Кандидаты на повышение, кадровый резерв, планирование карьеры, назначение на ключевые позиции</td></tr>
+                <tr><td>Чек-лист эффективности</td><td class="dim">Корректировка KPI, премии/бонусы, планирование развития</td></tr>
+                <tr><td>Чек-лист проф. знаний</td><td class="dim">Допуск к работам, направление на обучение, пересмотр грейда</td></tr>
+                <tr><td>Интервью по компетенциям</td><td class="dim">Отбор при найме, соответствие культуре, потребности в развитии soft skills</td></tr>
+                <tr><td>Профессиональный тест</td><td class="dim">Технический отбор, аттестация, учебные программы</td></tr>
+                <tr><td>Кейс-тесты</td><td class="dim">Потребности в развитии soft skills, лидерский потенциал</td></tr>
+                <tr><td>Опросник мотивации</td><td class="dim">Индивидуальные мотивационные схемы, удержание, расширение функционала</td></tr>
+                <tr><td>Тесты способностей</td><td class="dim">Отбор на позиции с высокими когнитивными требованиями, прогноз скорости обучения</td></tr>
+                <tr><td>Психометрические тесты</td><td class="dim">Отбор на стрессовые позиции, формирование команд, риски адаптации</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -491,8 +539,11 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 02 -->
     <section class="sec glass" id="s2">
       <div class="sec-head">
-        <p class="sec-eyebrow">02 / Чек-лист</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">02 / Чек-лист</p>
         <h2>Метрики качества отчета об оценке персонала</h2>
+        </div>
       </div>
       <div class="sec-body">
         <div class="grid2">
@@ -522,8 +573,11 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 03 -->
     <section class="sec glass" id="s3">
       <div class="sec-head">
-        <p class="sec-eyebrow">03 / Методология</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><path d="M12 4l8 4-8 4-8-4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 16l8 4 8-4"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">03 / Методология</p>
         <h2>Анализ данных оценки персонала</h2>
+        </div>
       </div>
       <div class="sec-body">
         <h3 class="h">Базовые принципы</h3>
@@ -584,8 +638,11 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 04 -->
     <section class="sec glass" id="s4">
       <div class="sec-head">
-        <p class="sec-eyebrow">04 / Практика</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v5.5L5.5 17a2 2 0 001.8 3h9.4a2 2 0 001.8-3L14 8.5V3"/><path d="M7.5 14h9"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">04 / Практика</p>
         <h2>Анализ данных: кейсы</h2>
+        </div>
       </div>
       <div class="sec-body">
         <div class="grid2">
@@ -611,9 +668,12 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 05 -->
     <section class="sec glass" id="s5">
       <div class="sec-head">
-        <p class="sec-eyebrow">05 / Статистика</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><path d="M5 19V10"/><path d="M12 19V5"/><path d="M19 19v-7"/><path d="M4 19h16"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">05 / Статистика</p>
         <h2>Корреляционный анализ</h2>
         <p class="sub">Корреляция — это связь. Но не любая.</p>
+        </div>
       </div>
       <div class="sec-body">
         <div class="grid2">
@@ -632,26 +692,26 @@ table.heat td.lvl{color:var(--text-1);}
         <h3 class="h">Максимально возможная сила зависимости — примеры</h3>
         <div class="scatter-row">
           <div class="scatter-card">
-            <svg viewBox="0 0 100 60"><line x1="8" y1="52" x2="92" y2="8" stroke="#4fd6c9" stroke-width="1" opacity=".35"/>
-              <circle cx="12" cy="49" r="3" fill="#4fd6c9"/><circle cx="22" cy="43" r="3" fill="#4fd6c9"/><circle cx="32" cy="37" r="3" fill="#4fd6c9"/>
-              <circle cx="42" cy="32" r="3" fill="#4fd6c9"/><circle cx="52" cy="27" r="3" fill="#4fd6c9"/><circle cx="62" cy="22" r="3" fill="#4fd6c9"/>
-              <circle cx="72" cy="17" r="3" fill="#4fd6c9"/><circle cx="82" cy="12" r="3" fill="#4fd6c9"/></svg>
+            <svg viewBox="0 0 100 60" style="color:var(--teal);"><line x1="8" y1="52" x2="92" y2="8" stroke="currentColor" stroke-width="1" opacity=".35"/>
+              <circle cx="12" cy="49" r="3" fill="currentColor"/><circle cx="22" cy="43" r="3" fill="currentColor"/><circle cx="32" cy="37" r="3" fill="currentColor"/>
+              <circle cx="42" cy="32" r="3" fill="currentColor"/><circle cx="52" cy="27" r="3" fill="currentColor"/><circle cx="62" cy="22" r="3" fill="currentColor"/>
+              <circle cx="72" cy="17" r="3" fill="currentColor"/><circle cx="82" cy="12" r="3" fill="currentColor"/></svg>
             <div class="r" style="color:var(--teal);">r = 1</div>
             <div class="lbl">IQ ↔ успеваемость — полная согласованность</div>
           </div>
           <div class="scatter-card">
-            <svg viewBox="0 0 100 60"><line x1="8" y1="8" x2="92" y2="52" stroke="#ef7f9b" stroke-width="1" opacity=".35"/>
-              <circle cx="12" cy="11" r="3" fill="#ef7f9b"/><circle cx="22" cy="17" r="3" fill="#ef7f9b"/><circle cx="32" cy="23" r="3" fill="#ef7f9b"/>
-              <circle cx="42" cy="28" r="3" fill="#ef7f9b"/><circle cx="52" cy="33" r="3" fill="#ef7f9b"/><circle cx="62" cy="38" r="3" fill="#ef7f9b"/>
-              <circle cx="72" cy="43" r="3" fill="#ef7f9b"/><circle cx="82" cy="48" r="3" fill="#ef7f9b"/></svg>
+            <svg viewBox="0 0 100 60" style="color:var(--rose);"><line x1="8" y1="8" x2="92" y2="52" stroke="currentColor" stroke-width="1" opacity=".35"/>
+              <circle cx="12" cy="11" r="3" fill="currentColor"/><circle cx="22" cy="17" r="3" fill="currentColor"/><circle cx="32" cy="23" r="3" fill="currentColor"/>
+              <circle cx="42" cy="28" r="3" fill="currentColor"/><circle cx="52" cy="33" r="3" fill="currentColor"/><circle cx="62" cy="38" r="3" fill="currentColor"/>
+              <circle cx="72" cy="43" r="3" fill="currentColor"/><circle cx="82" cy="48" r="3" fill="currentColor"/></svg>
             <div class="r" style="color:var(--rose);">r = −1</div>
             <div class="lbl">IQ ↔ успех в общении — полная обратная связь</div>
           </div>
           <div class="scatter-card">
-            <svg viewBox="0 0 100 60">
-              <circle cx="14" cy="24" r="3" fill="#a8bab7"/><circle cx="26" cy="46" r="3" fill="#a8bab7"/><circle cx="35" cy="18" r="3" fill="#a8bab7"/>
-              <circle cx="47" cy="38" r="3" fill="#a8bab7"/><circle cx="55" cy="14" r="3" fill="#a8bab7"/><circle cx="66" cy="44" r="3" fill="#a8bab7"/>
-              <circle cx="75" cy="22" r="3" fill="#a8bab7"/><circle cx="86" cy="30" r="3" fill="#a8bab7"/></svg>
+            <svg viewBox="0 0 100 60" style="color:var(--text-1);">
+              <circle cx="14" cy="24" r="3" fill="currentColor"/><circle cx="26" cy="46" r="3" fill="currentColor"/><circle cx="35" cy="18" r="3" fill="currentColor"/>
+              <circle cx="47" cy="38" r="3" fill="currentColor"/><circle cx="55" cy="14" r="3" fill="currentColor"/><circle cx="66" cy="44" r="3" fill="currentColor"/>
+              <circle cx="75" cy="22" r="3" fill="currentColor"/><circle cx="86" cy="30" r="3" fill="currentColor"/></svg>
             <div class="r" style="color:var(--text-1);">r ≈ 0</div>
             <div class="lbl">IQ ↔ длина прыжка — связи нет</div>
           </div>
@@ -761,8 +821,11 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 06 -->
     <section class="sec glass" id="s6">
       <div class="sec-head">
-        <p class="sec-eyebrow">06 / Инструмент</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="4.6" height="4.6" rx="1"/><rect x="9.7" y="4" width="4.6" height="4.6" rx="1"/><rect x="15.4" y="4" width="4.6" height="4.6" rx="1"/><rect x="4" y="9.7" width="4.6" height="4.6" rx="1"/><rect x="9.7" y="9.7" width="4.6" height="4.6" rx="1"/><rect x="15.4" y="9.7" width="4.6" height="4.6" rx="1"/><rect x="4" y="15.4" width="4.6" height="4.6" rx="1"/><rect x="9.7" y="15.4" width="4.6" height="4.6" rx="1"/><rect x="15.4" y="15.4" width="4.6" height="4.6" rx="1"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">06 / Инструмент</p>
         <h2>9-Box Matrix: что это и как использовать</h2>
+        </div>
       </div>
       <div class="sec-body">
         <p>Инструмент для классификации сотрудников по двум измерениям: <b style="color:var(--text-0);">оценка эффективности</b> (результаты работы — по вертикали) и <b style="color:var(--text-0);">потенциал развития</b> (способности к росту — по горизонтали). Помогает принимать кадровые решения: кого развивать, кого удерживать, кого заменять.</p>
@@ -803,9 +866,12 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 07 -->
     <section class="sec glass" id="s7">
       <div class="sec-head">
-        <p class="sec-eyebrow">07 / Формулировки</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v10H9.5L5 19v-3.5H4v-10z"/><path d="M8 9.5h8"/><path d="M8 12.5h5"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">07 / Формулировки</p>
         <h2>Выводы в отчетах по оценке персонала</h2>
         <p class="sub">Выводы должны стремиться ответить на три вопроса: что важно? что делать? какой результат ждать?</p>
+        </div>
       </div>
       <div class="sec-body">
         <div class="grid2">
@@ -832,9 +898,12 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 08 -->
     <section class="sec glass" id="s8">
       <div class="sec-head">
-        <p class="sec-eyebrow">08 / Примеры</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M20.5 15l-4.8-4.8a1.6 1.6 0 00-2.2 0L6 18"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">08 / Примеры</p>
         <h2>Визуализация в отчетах по оценке персонала</h2>
         <p class="sub">Таблицы, диаграммы, цветовые решения — реальные фрагменты отчетов.</p>
+        </div>
       </div>
       <div class="sec-body">
         <div class="gallery">
@@ -971,8 +1040,11 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 09 -->
     <section class="sec glass" id="s9">
       <div class="sec-head">
-        <p class="sec-eyebrow">09 / Шаблон</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13a1 1 0 01-1 1H7a1 1 0 01-1-1v-16a1 1 0 011-1z"/><path d="M14 3.5V8h4.5"/><path d="M9 12.5h6"/><path d="M9 15.5h6"/><path d="M9 9.5h2"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">09 / Шаблон</p>
         <h2>Содержание комплексного отчета об оценке персонала</h2>
+        </div>
       </div>
       <div class="sec-body">
         <div class="outline">
@@ -988,8 +1060,11 @@ table.heat td.lvl{color:var(--text-1);}
     <!-- 10 -->
     <section class="sec glass" id="s10">
       <div class="sec-head">
-        <p class="sec-eyebrow">10 / Итог</p>
+        <div class="sec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.4 2.4 4.6-5.2"/></svg></div>
+        <div class="sec-head-txt">
+          <p class="sec-eyebrow">10 / Итог</p>
         <h2>Результаты оценки</h2>
+        </div>
       </div>
       <div class="sec-body">
         <div class="grid3">

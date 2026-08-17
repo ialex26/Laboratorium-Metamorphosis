@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Отчёт по результатам комплексной оценки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>/* ============================================================
+   ОТЧЁТ ПО РЕЗУЛЬТАТАМ КОМПЛЕКСНОЙ ОЦЕНКИ
+   Дизайн-система «Жидкое стекло» — тот же язык, что и в методичке
+   ============================================================ */
+
+:root{
+  --pearl-1:#f3f6fb; --pearl-2:#eef1fb; --pearl-3:#eafaf6; --pearl-4:#fbf1f7; --bg-0:#eef1f8;
+  --teal-500:#2fb8ac; --teal-600:#1f9c92; --teal-100:#d6f3ef;
+  --violet-500:#8b7fd6; --violet-600:#6f60c4; --violet-100:#e6e2fb;
+  --coral-500:#f1a08b; --coral-600:#e8815f; --coral-100:#fbe4db;
+  --ink-900:#20263a; --ink-700:#3b4258; --ink-500:#636b83; --ink-300:#98a0b8;
+
+  --glass-fill: rgba(255,255,255,.55);
+  --glass-fill-strong: rgba(255,255,255,.72);
+  --glass-border: rgba(255,255,255,.65);
+  --glass-shadow: 0 8px 32px rgba(75,85,140,.14), 0 1.5px 4px rgba(75,85,140,.08);
+  --glass-shadow-soft: 0 4px 18px rgba(75,85,140,.10);
+  --glass-inset: inset 0 1px 0 rgba(255,255,255,.8), inset 0 -1px 12px rgba(255,255,255,.25);
+
+  --score-neg-bg:#f6dbe0; --score-neg-fg:#8c2f45; --score-neg-line:#d98aa0;
+  --score-l0-bg:#fbe6df;  --score-l0-fg:#a3512f;  --score-l0-line:#eab294;
+  --score-l1-bg:#e3ecd6;  --score-l1-fg:#4c6b2c;  --score-l1-line:#a9c584;
+  --score-l2-bg:#d9f0d2;  --score-l2-fg:#2f7a3d;  --score-l2-line:#8fd493;
+  --score-l3-bg:#cdeede;  --score-l3-fg:#1c7a5e;  --score-l3-line:#7fd2b3;
+  --score-na-bg:#e7e9f2;  --score-na-fg:#565f7a;  --score-na-line:#c3c8dc;
+
+  --radius-xl:28px; --radius-lg:22px; --radius-md:16px; --radius-sm:10px;
+  --font-display:'Unbounded','IBM Plex Sans',sans-serif;
+  --font-body:'IBM Plex Sans',sans-serif;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; font-family:var(--font-body); color:var(--ink-900);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(139,127,214,.16), transparent 42%),
+    radial-gradient(circle at 92% 10%, rgba(47,184,172,.16), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(241,160,139,.14), transparent 45%),
+    var(--bg-0);
+  min-height:100vh; line-height:1.6; font-size:16px; -webkit-font-smoothing:antialiased;
+}
+.blob{position:fixed; border-radius:50%; filter:blur(60px); z-index:-1; opacity:.55; pointer-events:none;}
+.blob-1{width:420px;height:420px; top:-120px; left:-120px; background:radial-gradient(circle, rgba(139,127,214,.55), transparent 70%);}
+.blob-2{width:380px;height:380px; top:30%; right:-140px; background:radial-gradient(circle, rgba(47,184,172,.5), transparent 70%);}
+.blob-3{width:360px;height:360px; bottom:-100px; left:20%; background:radial-gradient(circle, rgba(241,160,139,.45), transparent 70%);}
+
+h1,h2,h3,h4{font-family:var(--font-display); color:var(--ink-900); font-weight:600; letter-spacing:.01em; margin:0 0 .5em;}
+a{color:var(--teal-600);}
+p{margin:0 0 12px;}
+
+.wrap{max-width:900px; margin:0 auto; padding:24px 20px 80px;}
+
+/* ============ glass card ============ */
+.card{
+  background:var(--glass-fill); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1px solid var(--glass-border); border-radius:var(--radius-xl);
+  box-shadow:var(--glass-shadow), var(--glass-inset);
+  padding:32px 36px; margin:0 0 24px; position:relative; overflow:hidden;
+}
+.card::before{content:""; position:absolute; inset:0 0 auto 0; height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent);}
+.section-head{display:flex; align-items:center; gap:16px; margin-bottom:18px;}
+.section-head .eyebrow{font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:12px; color:var(--violet-600);}
+.section-head h2{font-size:22px; margin:2px 0 0;}
+.card-icon{
+  width:48px; height:48px; border-radius:16px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.95), var(--violet-100) 58%, var(--teal-100) 100%);
+  box-shadow:0 8px 18px -5px rgba(111,96,196,.4), inset 0 1px 1px rgba(255,255,255,.9), inset 0 -3px 5px rgba(90,80,180,.12);
+  font-size:19px;
+}
+.card-icon i{color:var(--violet-600);}
+
+/* ============ cover / title page ============ */
+.cover{
+  position:relative; padding:52px 48px; border-radius:36px; overflow:hidden; margin:24px 0 28px; color:#fff;
+  background:linear-gradient(120deg, rgba(139,127,214,.94), rgba(47,184,172,.88) 55%, rgba(241,160,139,.85));
+  box-shadow:0 24px 60px rgba(60,50,110,.28);
+}
+.cover::after{
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 18% 12%, rgba(255,255,255,.35), transparent 45%),
+             radial-gradient(ellipse at 88% 82%, rgba(255,255,255,.2), transparent 50%);
+  mix-blend-mode:overlay;
+}
+.cover-top{position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; margin-bottom:46px; flex-wrap:wrap; gap:14px;}
+.cover-logo{display:flex; align-items:center; gap:12px;}
+.cover-logo svg{display:block;}
+.cover-badge{
+  display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.5);
+  padding:7px 16px; border-radius:999px; font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; backdrop-filter:blur(6px);
+}
+.cover h1{position:relative; z-index:1; color:#fff; font-size:34px; line-height:1.18; margin:0 0 12px; max-width:560px; text-shadow:0 2px 18px rgba(30,20,60,.18);}
+.cover .cover-sub{position:relative; z-index:1; color:rgba(255,255,255,.92); font-size:14.5px; max-width:560px; margin:0 0 34px;}
+
+.cover-fields{position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; gap:14px 28px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:24px 26px; backdrop-filter:blur(8px);}
+.cover-field label{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:rgba(255,255,255,.85); font-weight:700; margin-bottom:5px;}
+.cover-field input{
+  width:100%; border:none; border-bottom:2px solid rgba(255,255,255,.55); background:transparent; color:#fff;
+  font-family:var(--font-body); font-size:15px; font-weight:600; padding:4px 2px 7px; outline:none;
+}
+.cover-field input::placeholder{color:rgba(255,255,255,.55); font-weight:400;}
+.cover-field input:focus{border-bottom-color:#fff;}
+.cover-field input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);}
+
+.confid-note{
+  display:flex; gap:12px; align-items:flex-start; margin-top:26px; padding:16px 20px; border-radius:16px;
+  background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.4); color:#fff; font-size:13px; position:relative; z-index:1;
+}
+.confid-note i{margin-top:2px; flex:0 0 auto;}
+.confid-note b{display:block; margin-bottom:3px; font-size:13.5px;}
+
+/* ============ conclusion picker ============ */
+.conclusion-picker{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+.concl-opt{
+  display:flex; align-items:center; gap:8px; padding:11px 18px; border-radius:999px; cursor:pointer;
+  background:var(--glass-fill-strong); border:1px solid var(--glass-border); font-size:13.5px; font-weight:600;
+  box-shadow:var(--glass-shadow-soft); transition:transform .12s ease;
+}
+.concl-opt input{accent-color:var(--teal-600);}
+.concl-opt:has(input:checked){outline:2px solid var(--teal-500); background:var(--teal-100);}
+
+/* ============ scale legend ============ */
+.scale-row{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 6px;}
+.scale-item{display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:12px 14px; border-radius:var(--radius-md); background:var(--glass-fill-strong); border:1px solid var(--glass-border); font-size:12px; color:var(--ink-700);}
+.score-chip{
+  display:inline-flex; align-items:center; justify-content:center; min-width:44px; padding:4px 10px; border-radius:999px;
+  font-weight:700; font-size:13px; border:1px solid transparent;
+}
+.score-neg{background:var(--score-neg-bg); color:var(--score-neg-fg); border-color:var(--score-neg-line);}
+.score-l0{background:var(--score-l0-bg); color:var(--score-l0-fg); border-color:var(--score-l0-line);}
+.score-l1{background:var(--score-l1-bg); color:var(--score-l1-fg); border-color:var(--score-l1-line);}
+.score-l2{background:var(--score-l2-bg); color:var(--score-l2-fg); border-color:var(--score-l2-line);}
+.score-l3{background:var(--score-l3-bg); color:var(--score-l3-fg); border-color:var(--score-l3-line);}
+.score-na{background:var(--score-na-bg); color:var(--score-na-fg); border-color:var(--score-na-line);}
+
+/* ============ overall badge ============ */
+.overall-badge{
+  display:flex; align-items:center; gap:12px; padding:16px 22px; border-radius:var(--radius-md); margin:4px 0 18px;
+  background:linear-gradient(120deg, var(--violet-100), var(--teal-100)); font-size:14px; flex-wrap:wrap;
+}
+.overall-badge strong{font-size:22px; font-family:var(--font-display); color:var(--violet-600);}
+.overall-level{margin-left:auto; font-weight:700; padding:5px 16px; border-radius:999px; background:#fff; font-size:12.5px;}
+.threshold-field{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-500); margin-left:auto;}
+.threshold-field input{width:52px; border:1px solid rgba(140,150,190,.4); border-radius:8px; padding:4px 6px; font-size:13px; text-align:center;}
+
+/* ============ bar chart rows ============ */
+.chart-block{margin-bottom:8px;}
+.chart-block h3{font-size:15px; margin:18px 0 10px;}
+.bar-row{display:grid; grid-template-columns:200px 1fr 50px; align-items:center; gap:12px; padding:5px 8px; border-radius:10px;}
+.bar-row.compact{grid-template-columns:230px 1fr 44px; padding:3px 8px;}
+.bar-name{font-size:12.5px; font-weight:600;}
+.bar-track{position:relative; height:12px; border-radius:999px; background:rgba(140,150,190,.16); overflow:visible;}
+.bar-fill{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, var(--violet-500), var(--teal-500)); transition:width .25s ease;}
+.bar-row.strong .bar-fill{background:linear-gradient(90deg, #7fd2b3, #2f7a3d);}
+.bar-row.grow .bar-fill{background:linear-gradient(90deg, #eab294, #e8815f);}
+.bar-row.na .bar-fill{background:rgba(140,150,190,.3);}
+.bar-threshold{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--ink-900); opacity:.35; border-radius:2px;}
+.bar-val{font-weight:700; font-size:12.5px; text-align:right;}
+.bar-input{width:56px; border:1px solid rgba(140,150,190,.4); border-radius:8px; padding:4px 6px; font-size:12.5px; text-align:center; font-weight:600;}
+.print-only-inline{display:none;}
+
+.bullet-group{margin-bottom:10px; padding:10px 14px; border-radius:14px; background:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.6);}
+.bullet-group-title{font-size:12px; font-weight:700; color:var(--violet-600); margin-bottom:6px;}
+
+/* ============ motivation / ability inputs ============ */
+.field-row{display:flex; align-items:center; gap:14px; margin-bottom:6px; flex-wrap:wrap;}
+.field-row label{font-size:13.5px; font-weight:600; flex:1 1 260px;}
+.field-row .num-input{width:70px; border:1px solid rgba(140,150,190,.4); border-radius:8px; padding:6px 8px; font-size:13.5px; text-align:center; font-weight:600;}
+
+.ability-table{width:100%; border-collapse:collapse; font-size:13px; margin-bottom:14px;}
+.ability-table th{background:linear-gradient(135deg, var(--violet-100), var(--teal-100)); color:var(--ink-900); font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; padding:10px 14px; text-align:left;}
+.ability-table td{padding:10px 14px; border-bottom:1px solid rgba(140,150,190,.16); vertical-align:middle;}
+.ability-table td.val-cell{width:90px; text-align:center;}
+.ability-table input{width:64px; border:1px solid rgba(140,150,190,.4); border-radius:8px; padding:5px 6px; font-size:13px; text-align:center; font-weight:600;}
+.table-wrap{overflow-x:auto; border-radius:var(--radius-lg); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow-soft); margin:0 0 18px; background:var(--glass-fill-strong);}
+.table-wrap table{margin:0;}
+
+/* ============ callout ============ */
+.callout{border-radius:var(--radius-lg); padding:18px 22px; margin:0 0 18px; border:1px solid var(--glass-border); background:var(--glass-fill-strong); box-shadow:var(--glass-shadow-soft);}
+.callout-title{display:flex; align-items:center; gap:9px; font-weight:700; margin-bottom:7px; color:var(--violet-600); font-size:12.5px; text-transform:uppercase; letter-spacing:.07em;}
+.callout.warn{border-left:4px solid var(--coral-600);}
+
+/* ============ form fields (generic) ============ */
+.form-card{padding:22px 24px; border-radius:var(--radius-lg); background:var(--glass-fill-strong); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow-soft); margin-bottom:18px;}
+.line-textarea{width:100%; border:1px solid rgba(140,150,190,.35); border-radius:var(--radius-sm); padding:10px 12px; min-height:64px; font-family:var(--font-body); font-size:13.5px; color:var(--ink-900); resize:vertical; outline:none;}
+.line-textarea:focus{border-color:var(--teal-500);}
+.field-label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--violet-600); font-weight:700; margin-bottom:8px;}
+
+/* ============ toolbar (fixed buttons) ============ */
+.toolbar{position:fixed; right:26px; bottom:26px; z-index:50; display:flex; flex-direction:column; gap:10px; align-items:flex-end;}
+.tool-btn{
+  display:flex; align-items:center; gap:9px; padding:13px 20px; border-radius:999px; border:1px solid rgba(255,255,255,.6);
+  color:#fff; font-family:var(--font-body); font-weight:600; font-size:13.5px; cursor:pointer;
+  box-shadow:0 14px 30px rgba(90,80,180,.3), inset 0 1px 0 rgba(255,255,255,.5); transition:transform .15s ease;
+}
+.tool-btn:hover{transform:translateY(-2px);}
+.tool-btn.print-btn{background:linear-gradient(135deg, var(--violet-500), var(--teal-500));}
+.tool-btn.xls-btn{background:linear-gradient(135deg, #3fa66b, #2f7a3d);}
+.tool-btn i{width:16px; text-align:center;}
+
+/* ============ footer ============ */
+footer{
+  margin:20px 0 0; padding:20px 26px; border-radius:var(--radius-lg);
+  background:var(--glass-fill); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow-soft);
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  font-size:12.5px; color:var(--ink-500);
+}
+footer .contacts{display:flex; gap:16px; flex-wrap:wrap;}
+footer .contacts a{color:var(--ink-700); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600;}
+footer i{color:var(--teal-600);}
+
+hr.div{border:none; border-top:1px solid rgba(140,150,190,.25); margin:20px 0;}
+
+/* ============ responsive ============ */
+@media screen and (max-width:720px){
+  .cover{padding:34px 24px;}
+  .cover h1{font-size:26px;}
+  .cover-fields{grid-template-columns:1fr;}
+  .card{padding:22px 18px;}
+  .scale-row{grid-template-columns:repeat(2,1fr);}
+  .bar-row, .bar-row.compact{grid-template-columns:120px 1fr 40px; gap:8px;}
+  .bar-name{font-size:11px;}
+  footer{flex-direction:column; align-items:flex-start;}
+}
+
+/* ============ print ============ */
+@media print{
+  @page{ size:A4; margin:11mm 10mm; }
+  *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important;}
+  body{background:#fff !important; font-size:8.8pt; line-height:1.4;}
+  .blob, .toolbar{display:none !important;}
+  .wrap{max-width:none; padding:0; margin:0;}
+
+  .cover{margin:0 0 10pt; padding:16pt 18pt; border-radius:10pt; box-shadow:none; break-inside:avoid; break-after:page;}
+  .cover-top{margin-bottom:20pt;}
+  .cover-logo svg{transform:scale(.85); transform-origin:left center;}
+  .cover-badge{font-size:7.5pt; padding:3pt 9pt;}
+  .cover h1{font-size:19pt; margin:0 0 8pt;}
+  .cover .cover-sub{font-size:9pt; margin:0 0 18pt;}
+  .cover-fields{gap:9pt 20pt; padding:14pt 16pt; border-radius:12pt;}
+  .cover-field label{font-size:7pt;}
+  .cover-field input{font-size:10pt; padding:2pt 1pt 4pt;}
+  .confid-note{margin-top:14pt; padding:10pt 12pt; font-size:8pt; border-radius:10pt;}
+  .confid-note b{font-size:8.6pt;}
+
+  .card{background:#fff !important; box-shadow:none !important; border:1px solid #d8dceb; backdrop-filter:none !important; padding:11pt 13pt; margin:0 0 9pt; border-radius:7pt; break-inside:avoid;}
+  .section-head{gap:9pt; margin-bottom:9pt;}
+  .section-head h2{font-size:13pt;}
+  .section-head .eyebrow{font-size:7pt;}
+  .card-icon{width:22pt; height:22pt; border-radius:8pt; font-size:10pt; box-shadow:none; border:1px solid #e3e6f2;}
+
+  .conclusion-picker{gap:6pt; margin-bottom:8pt;}
+  .concl-opt{padding:5pt 10pt; font-size:8pt; box-shadow:none; border:1px solid #d8dceb;}
+  .concl-opt:has(input:checked){outline:1.3pt solid var(--teal-500);}
+
+  .scale-row{gap:5pt; margin-bottom:8pt;}
+  .scale-item{padding:6pt 8pt; font-size:7.3pt; gap:3pt; border:1px solid #d8dceb; box-shadow:none;}
+  .score-chip{font-size:7.5pt; padding:1.5pt 6pt; min-width:30pt;}
+
+  .overall-badge{padding:7pt 10pt; margin:3pt 0 8pt; font-size:8.6pt; border-radius:7pt;}
+  .overall-badge strong{font-size:13pt;}
+  .overall-level{font-size:7.6pt; padding:2pt 9pt;}
+  .threshold-field{font-size:7.6pt;}
+  .threshold-field input{width:28pt; padding:1.5pt 3pt; font-size:7.6pt;}
+
+  .chart-block h3{font-size:9.6pt; margin:10pt 0 6pt;}
+  .bar-row, .bar-row.compact{grid-template-columns:110pt 1fr 24pt; gap:6pt; padding:2pt 4pt; break-inside:avoid;}
+  .bar-name{font-size:7.6pt;}
+  .bar-track{height:6.5pt;}
+  .bar-val{font-size:7.6pt;}
+  .screen-only-inline{display:none !important;}
+  .print-only-inline{display:inline !important; font-weight:700; font-size:7.6pt; text-align:right;}
+  .bullet-group{padding:6pt 8pt; margin-bottom:5pt; break-inside:avoid;}
+  .bullet-group-title{font-size:7.4pt; margin-bottom:3pt;}
+
+  .field-row label{font-size:8.4pt;}
+  .field-row .num-input{width:34pt; font-size:8pt; padding:2pt 3pt;}
+
+  .ability-table{font-size:7.8pt;}
+  .ability-table th{font-size:6.8pt; padding:5pt 8pt;}
+  .ability-table td{padding:5pt 8pt;}
+  .ability-table input{width:34pt; font-size:7.8pt; padding:2pt 3pt;}
+  .table-wrap{box-shadow:none; border:1px solid #d8dceb; border-radius:7pt;}
+
+  .callout{padding:9pt 11pt; margin:0 0 9pt; border-radius:8pt; background:#fbfbfe !important; box-shadow:none; border:1px solid #e3e6f2; break-inside:avoid;}
+  .callout-title{font-size:7.4pt; margin-bottom:5pt;}
+
+  .form-card{padding:10pt 12pt; border-radius:8pt; margin-bottom:9pt; box-shadow:none; border:1px solid #d8dceb;}
+  .field-label{font-size:6.8pt;}
+  .line-textarea{font-size:8.5pt; min-height:32pt; border:1px solid #d8dceb;}
+
+  footer{box-shadow:none; border:1px solid #d8dceb; break-inside:avoid; padding:8pt 12pt; font-size:7.2pt; margin-top:10pt;}
+  h3{font-size:9.6pt !important; margin:10pt 0 6pt !important;}
+}
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="toolbar">
+  <button class="tool-btn xls-btn" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Скачать Excel</button>
+  <button class="tool-btn print-btn" onclick="window.print()"><i class="fa-solid fa-print"></i> Печать / PDF (A4)</button>
+</div>
+
+<div class="wrap">
+
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-logo"><svg width="230" height="52" viewBox="0 0 320 72" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ЕИПП РФ">
+  <defs>
+    <linearGradient id="eippGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity=".55"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="18" fill="url(#eippGrad)"/>
+  <rect x="14" y="34" width="9" height="18" rx="1.5" fill="#6f60c4" opacity="0.9"/>
+  <rect x="25" y="26" width="9" height="26" rx="1.5" fill="#6f60c4" opacity="0.9"/>
+  <rect x="36" y="30" width="9" height="22" rx="1.5" fill="#1f9c92" opacity="0.9"/>
+  <rect x="47" y="22" width="9" height="30" rx="1.5" fill="#1f9c92" opacity="0.9"/>
+  <rect x="12" y="52" width="46" height="3" rx="1.5" fill="#3b4258"/>
+  <path d="M32 8 L37 18 L32 15 L27 18 Z" fill="#e8815f"/>
+  <circle cx="32" cy="18" r="3.2" fill="none" stroke="#e8815f" stroke-width="1.6"/>
+  <text x="76" y="30" font-family="Unbounded, sans-serif" font-size="22" font-weight="700" fill="#ffffff">ЕИПП</text>
+  <text x="76" y="46" font-family="IBM Plex Sans, sans-serif" font-size="9.5" font-weight="600" letter-spacing="0.03em" fill="rgba(255,255,255,.88)">ЕДИНЫЙ ИНСТИТУТ</text>
+  <text x="76" y="58" font-family="IBM Plex Sans, sans-serif" font-size="9.5" font-weight="600" letter-spacing="0.03em" fill="rgba(255,255,255,.88)">ПРОСТРАНСТВЕННОГО ПЛАНИРОВАНИЯ</text>
+</svg></div>
+    <span class="cover-badge"><i class="fa-solid fa-shield-halved"></i> Конфиденциально</span>
+  </div>
+  <h1>Отчёт по результатам<br/>комплексной оценки</h1>
+  <p class="cover-sub">Оценка управленческих компетенций, мотивации к деятельности и тестовых способностей кандидата.</p>
+
+  <div class="cover-fields">
+    <div class="cover-field"><label>ФИО</label><input type="text" id="f-fio" oninput="syncTitle()" placeholder="Иванов Иван Иванович"/></div>
+    <div class="cover-field"><label>Общество</label><input type="text" id="f-obshestvo" oninput="syncTitle()" placeholder="ООО «Компания»"/></div>
+    <div class="cover-field"><label>Текущая должность</label><input type="text" id="f-tek" oninput="syncTitle()" placeholder=""/></div>
+    <div class="cover-field"><label>Год рождения</label><input type="number" id="f-year" placeholder="1990"/></div>
+    <div class="cover-field"><label>Email</label><input type="email" id="f-email" placeholder="name@company.ru"/></div>
+    <div class="cover-field"><label>Телефон</label><input type="tel" id="f-phone" placeholder="+7 900 000-00-00"/></div>
+    <div class="cover-field"><label>Дата оценки</label><input type="date" id="f-date"/></div>
+    <div class="cover-field"><label>Интервьюер</label><input type="text" id="f-interviewer" placeholder=""/></div>
+  </div>
+
+  <div class="confid-note">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <div>
+      <b>Внимание! Данный отчёт является конфиденциальным.</b>
+      Заключение по результатам оценки носит рекомендательный характер и не является основанием для отказа при
+      приёме/переводе работника на руководящую должность. Результаты оценки актуальны в течение 2 лет.
+    </div>
+  </div>
+</div>
+
+
+<section class="card" id="conclusion">
+  <div class="section-head">
+    <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+    <div><div class="eyebrow">Итог оценки</div><h2>Заключение по результатам оценки</h2></div>
+  </div>
+  <p style="font-size:12.5px; color:var(--ink-500); margin-top:-8px;">(рекомендован / рекомендован с учётом выявленных рисков / не рекомендован)</p>
+  <div class="conclusion-picker">
+    <label class="concl-opt"><input type="radio" name="conclusion" value="Рекомендован"><span>Рекомендован</span></label>
+    <label class="concl-opt"><input type="radio" name="conclusion" value="Рекомендован с учётом выявленных рисков"><span>Рекомендован с учётом рисков</span></label>
+    <label class="concl-opt"><input type="radio" name="conclusion" value="Не рекомендован"><span>Не рекомендован</span></label>
+  </div>
+</section>
+
+
+<section class="card" id="scale">
+  <div class="section-head">
+    <div class="card-icon"><i class="fa-solid fa-ruler"></i></div>
+    <div><div class="eyebrow">Инструмент интерпретации</div><h2>Шкала интерпретации уровня развития компетенций</h2></div>
+  </div>
+  <div class="scale-row">
+    <div class="scale-item"><span class="score-chip score-l0">0 – 0,9</span><span>не соответствует ожиданиям (уровень некомпетентности)</span></div>
+    <div class="scale-item"><span class="score-chip score-l1">1 – 1,9</span><span>требуются улучшения (уровень освоения, развития)</span></div>
+    <div class="scale-item"><span class="score-chip score-l2">2 – 2,5</span><span>соответствует ожиданиям (уровень опыта)</span></div>
+    <div class="scale-item"><span class="score-chip score-l3">2,6 – 3</span><span>превосходит ожидания (уровень лидерства)</span></div>
+  </div>
+</section>
+
+
+<section class="card" id="charts">
+  <div class="section-head">
+    <div class="card-icon"><i class="fa-solid fa-chart-column"></i></div>
+    <div><div class="eyebrow">Профиль кандидата</div><h2>Оценка компетенций и буллитов</h2></div>
+  </div>
+
+  <div class="overall-badge">
+    Средний балл по компетенциям: <strong id="overall-avg">—</strong>
+    <span id="overall-level" class="overall-level">—</span>
+    <span class="threshold-field">Пороговая оценка: <input type="number" id="threshold" value="2" min="0" max="3" step="0.1" oninput="recalc()"/></span>
+  </div>
+
+  <div class="callout info" style="border-left:4px solid var(--teal-600);">
+    <div class="callout-title"><i class="fa-solid fa-circle-info"></i> Как заполнять</div>
+    Проставьте баллы по каждому буллиту (0–3, шаг 0,5) в разделе «Оценка буллитов компетенций» ниже — оценка по
+    компетенциям над графиком буллитов пересчитается автоматически как среднее двух буллитов. Вертикальная чёрточка
+    на шкале — пороговая оценка, задайте её значение выше.
+  </div>
+
+  <div class="chart-block">
+    <h3>Оценка компетенций кандидата</h3>
+    <div class="bar-row" id="comp-row-0">
+          <span class="bar-name">Ответственность за результат</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-0" style="left:0%"></span><span class="bar-fill" id="comp-bar-0" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-0">—</span>
+        </div><div class="bar-row" id="comp-row-1">
+          <span class="bar-name">Непрерывные улучшения</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-1" style="left:0%"></span><span class="bar-fill" id="comp-bar-1" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-1">—</span>
+        </div><div class="bar-row" id="comp-row-2">
+          <span class="bar-name">Развитие команды</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-2" style="left:0%"></span><span class="bar-fill" id="comp-bar-2" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-2">—</span>
+        </div><div class="bar-row" id="comp-row-3">
+          <span class="bar-name">Лидерство в команде</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-3" style="left:0%"></span><span class="bar-fill" id="comp-bar-3" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-3">—</span>
+        </div><div class="bar-row" id="comp-row-4">
+          <span class="bar-name">Взаимодействие с другими</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-4" style="left:0%"></span><span class="bar-fill" id="comp-bar-4" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-4">—</span>
+        </div><div class="bar-row" id="comp-row-5">
+          <span class="bar-name">Управление людьми</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-5" style="left:0%"></span><span class="bar-fill" id="comp-bar-5" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-5">—</span>
+        </div><div class="bar-row" id="comp-row-6">
+          <span class="bar-name">Стратегическое принятие решений</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-6" style="left:0%"></span><span class="bar-fill" id="comp-bar-6" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-6">—</span>
+        </div><div class="bar-row" id="comp-row-7">
+          <span class="bar-name">Приверженность</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-7" style="left:0%"></span><span class="bar-fill" id="comp-bar-7" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-7">—</span>
+        </div><div class="bar-row" id="comp-row-8">
+          <span class="bar-name">Партнерство</span>
+          <span class="bar-track"><span class="bar-threshold" id="comp-th-8" style="left:0%"></span><span class="bar-fill" id="comp-bar-8" style="width:0%"></span></span>
+          <span class="bar-val" id="comp-val-8">—</span>
+        </div>
+  </div>
+
+  <div class="chart-block">
+    <h3>Оценка буллитов компетенций</h3>
+    <div class="bullet-group"><div class="bullet-group-title">01 · Ответственность за результат</div><div class="bar-row compact" id="bul-row-0_0">
+              <span class="bar-name">Амбициозность и готовность к трудностям</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-0_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-0_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-0_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-0_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-0_1">
+              <span class="bar-name">Ориентация на качество результата</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-0_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-0_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-0_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-0_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">02 · Непрерывные улучшения</div><div class="bar-row compact" id="bul-row-1_0">
+              <span class="bar-name">Стремление к улучшениям</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-1_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-1_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-1_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-1_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-1_1">
+              <span class="bar-name">Поддержка инициатив</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-1_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-1_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-1_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-1_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">03 · Развитие команды</div><div class="bar-row compact" id="bul-row-2_0">
+              <span class="bar-name">Саморазвитие</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-2_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-2_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-2_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-2_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-2_1">
+              <span class="bar-name">Развитие других</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-2_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-2_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-2_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-2_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">04 · Лидерство в команде</div><div class="bar-row compact" id="bul-row-3_0">
+              <span class="bar-name">Мотивация и влияние</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-3_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-3_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-3_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-3_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-3_1">
+              <span class="bar-name">Оценка и обратная связь команде</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-3_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-3_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-3_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-3_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">05 · Взаимодействие с другими</div><div class="bar-row compact" id="bul-row-4_0">
+              <span class="bar-name">Навыки коммуникации</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-4_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-4_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-4_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-4_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-4_1">
+              <span class="bar-name">Эффективное взаимодействие</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-4_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-4_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-4_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-4_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">06 · Управление людьми</div><div class="bar-row compact" id="bul-row-5_0">
+              <span class="bar-name">Планирование и организация</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-5_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-5_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-5_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-5_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-5_1">
+              <span class="bar-name">Контроль исполнения</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-5_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-5_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-5_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-5_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">07 · Стратегическое принятие решений</div><div class="bar-row compact" id="bul-row-6_0">
+              <span class="bar-name">Навыки работы с информацией</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-6_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-6_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-6_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-6_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-6_1">
+              <span class="bar-name">Взвешенность решений, оценка рисков и возможностей</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-6_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-6_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-6_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-6_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">08 · Приверженность</div><div class="bar-row compact" id="bul-row-7_0">
+              <span class="bar-name">Лояльность к Компании</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-7_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-7_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-7_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-7_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-7_1">
+              <span class="bar-name">Следование нормам и правилам</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-7_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-7_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-7_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-7_1">—</span>
+            </div></div><div class="bullet-group"><div class="bullet-group-title">09 · Партнерство</div><div class="bar-row compact" id="bul-row-8_0">
+              <span class="bar-name">Развитие сети бизнес-контактов</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-8_0" style="left:0%"></span><span class="bar-fill" id="bul-bar-8_0" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-8_0" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-8_0">—</span>
+            </div><div class="bar-row compact" id="bul-row-8_1">
+              <span class="bar-name">Взаимовыгодное сотрудничество</span>
+              <span class="bar-track"><span class="bar-threshold" id="bul-th-8_1" style="left:0%"></span><span class="bar-fill" id="bul-bar-8_1" style="width:0%"></span></span>
+              <span class="bar-input-wrap screen-only-inline">
+                <input type="number" class="bar-input" id="bul-input-8_1" min="0" max="3" step="0.5" placeholder="—" oninput="recalc()"/>
+              </span>
+              <span class="bar-val print-only-inline" id="bul-val-8_1">—</span>
+            </div></div>
+  </div>
+</section>
+
+
+<section class="card" id="motivation">
+  <div class="section-head">
+    <div class="card-icon"><i class="fa-solid fa-fire"></i></div>
+    <div><div class="eyebrow">Дополнительно</div><h2>Особенности мотивации к деятельности</h2></div>
+  </div>
+  <div class="field-row">
+    <label>Итоговый балл мотивации (от 0 до 3)</label>
+    <input type="number" class="num-input" id="f-motivation" min="0" max="3" step="0.5" placeholder="—"/>
+  </div>
+</section>
+
+
+<section class="card" id="ability">
+  <div class="section-head">
+    <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+    <div><div class="eyebrow">Тестирование</div><h2>Результаты тестов способностей</h2></div>
+  </div>
+  <div class="table-wrap">
+    <table class="ability-table">
+      <thead><tr><th style="width:26%">Наименование</th><th>Определение</th><th class="val-cell">Значение</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Работа с числовыми данными</td>
+          <td>Способность делать выводы на основе анализа числовых данных</td>
+          <td class="val-cell"><input type="number" min="1" max="10" step="1" id="f-num-ability" placeholder="—"/></td>
+        </tr>
+        <tr>
+          <td>Работа с текстовыми данными</td>
+          <td>Способность анализировать текстовую информацию</td>
+          <td class="val-cell"><input type="number" min="1" max="10" step="1" id="f-text-ability" placeholder="—"/></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-size:15px; margin:18px 0 10px;">Шкала интерпретации уровня развития способностей</h3>
+  <div class="scale-row" style="grid-template-columns:repeat(5,1fr);">
+    <div class="scale-item"><span class="score-chip score-l0">1 – 3</span><span><strong>Низкий.</strong> Для обучения и принятия решений требуется больше времени</span></div>
+    <div class="scale-item"><span class="score-chip score-l1">4</span><span><strong>Ниже среднего.</strong> Может не всегда справляться с требуемым темпом рабочих задач</span></div>
+    <div class="scale-item"><span class="score-chip score-l2">5 – 6</span><span><strong>Средний.</strong> Способен справляться со сложными задачами на рабочем месте</span></div>
+    <div class="scale-item"><span class="score-chip score-l2">7</span><span><strong>Выше среднего.</strong> Способен с высокой эффективностью справляться со сложными задачами</span></div>
+    <div class="scale-item"><span class="score-chip score-l3">8 – 10</span><span><strong>Высокий.</strong> Способен с очень высокой эффективностью справляться со сложными задачами</span></div>
+  </div>
+</section>
+
+
+<section class="card" id="comments">
+  <div class="section-head">
+    <div class="card-icon"><i class="fa-solid fa-comment-dots"></i></div>
+    <div><div class="eyebrow">Резюме</div><h2>Свободные комментарии</h2></div>
+  </div>
+  <div class="form-card" style="margin-bottom:0;">
+    <label class="field-label">Итоговый комментарий для заказчика</label>
+    <textarea class="line-textarea" id="f-comments" rows="4" placeholder="Сильные стороны, зоны роста, рекомендации по развитию…"></textarea>
+  </div>
+</section>
+
+
+<footer>
+  <div>© 2025 ЕИПП РФ · Отчёт по результатам комплексной оценки — конфиденциально</div>
+  <div class="contacts">
+    <a href="tel:+79262043709"><i class="fa-solid fa-phone"></i> +7 (926) 204-37-09</a>
+  </div>
+</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const COMPETENCIES = [["Ответственность за результат", ["Амбициозность и готовность к трудностям", "Ориентация на качество результата"]], ["Непрерывные улучшения", ["Стремление к улучшениям", "Поддержка инициатив"]], ["Развитие команды", ["Саморазвитие", "Развитие других"]], ["Лидерство в команде", ["Мотивация и влияние", "Оценка и обратная связь команде"]], ["Взаимодействие с другими", ["Навыки коммуникации", "Эффективное взаимодействие"]], ["Управление людьми", ["Планирование и организация", "Контроль исполнения"]], ["Стратегическое принятие решений", ["Навыки работы с информацией", "Взвешенность решений, оценка рисков и возможностей"]], ["Приверженность", ["Лояльность к Компании", "Следование нормам и правилам"]], ["Партнерство", ["Развитие сети бизнес-контактов", "Взаимовыгодное сотрудничество"]]];
+
+function fmtScore(x){
+  if (x === null || isNaN(x)) return '—';
+  return (Math.round(x * 100) / 100).toString().replace('.', ',');
+}
+
+function zoneClass(v, threshold){
+  if (v === null) return 'na';
+  return v >= threshold ? 'strong' : 'grow';
+}
+
+function recalc(){
+  const threshold = parseFloat(document.getElementById('threshold').value) || 0;
+  const thPct = Math.max(0, Math.min(100, threshold / 3 * 100));
+  const compAverages = [];
+  COMPETENCIES.forEach((comp, ci) => {
+    const scores = [];
+    comp[1].forEach((bname, bj) => {
+      const inp = document.getElementById(`bul-input-${ci}_${bj}`);
+      const v = inp && inp.value !== '' ? parseFloat(inp.value) : null;
+      const bar = document.getElementById(`bul-bar-${ci}_${bj}`);
+      const th = document.getElementById(`bul-th-${ci}_${bj}`);
+      const row = document.getElementById(`bul-row-${ci}_${bj}`);
+      const valSpan = document.getElementById(`bul-val-${ci}_${bj}`);
+      if (bar) bar.style.width = (v === null ? 0 : (v / 3 * 100)) + '%';
+      if (th) th.style.left = thPct + '%';
+      if (row) row.className = 'bar-row compact ' + zoneClass(v, threshold);
+      if (valSpan) valSpan.textContent = fmtScore(v);
+      if (v !== null && !isNaN(v)) scores.push(v);
+    });
+    const avg = scores.length ? (scores.reduce((a,x)=>a+x,0) / scores.length) : null;
+    compAverages.push(avg);
+    const bar = document.getElementById(`comp-bar-${ci}`);
+    const th = document.getElementById(`comp-th-${ci}`);
+    const val = document.getElementById(`comp-val-${ci}`);
+    const row = document.getElementById(`comp-row-${ci}`);
+    if (bar) bar.style.width = (avg === null ? 0 : (avg / 3 * 100)) + '%';
+    if (th) th.style.left = thPct + '%';
+    if (val) val.textContent = fmtScore(avg);
+    if (row) row.className = 'bar-row ' + zoneClass(avg, threshold);
+  });
+  const valid = compAverages.filter(v => v !== null);
+  const overall = valid.length ? valid.reduce((a,x)=>a+x,0) / valid.length : null;
+  document.getElementById('overall-avg').textContent = fmtScore(overall);
+  const levelEl = document.getElementById('overall-level');
+  let label = '—';
+  if (overall !== null){
+    if (overall < 1) label = 'не соответствует ожиданиям';
+    else if (overall < 2) label = 'требуются улучшения';
+    else if (overall < 2.6) label = 'соответствует ожиданиям';
+    else label = 'превосходит ожидания';
+  }
+  levelEl.textContent = label;
+}
+
+function syncTitle(){
+  const fio = document.getElementById('f-fio').value;
+  document.title = (fio ? fio + ' — ' : '') + 'Отчёт по результатам комплексной оценки';
+}
+
+function val(id){ const el = document.getElementById(id); return el ? el.value : ''; }
+
+function exportExcel(){
+  const wb = XLSX.utils.book_new();
+  const rows = [];
+  rows.push(['ОТЧЁТ ПО РЕЗУЛЬТАТАМ КОМПЛЕКСНОЙ ОЦЕНКИ']);
+  rows.push([]);
+  rows.push(['ФИО', val('f-fio')]);
+  rows.push(['Общество', val('f-obshestvo')]);
+  rows.push(['Текущая должность', val('f-tek')]);
+  rows.push(['Год рождения', val('f-year')]);
+  rows.push(['Email', val('f-email')]);
+  rows.push(['Телефон', val('f-phone')]);
+  rows.push(['Дата оценки', val('f-date')]);
+  rows.push(['Интервьюер', val('f-interviewer')]);
+  rows.push([]);
+  const concl = document.querySelector('input[name=conclusion]:checked');
+  rows.push(['Заключение по результатам оценки', concl ? concl.value : '']);
+  rows.push([]);
+  rows.push(['ОЦЕНКА КОМПЕТЕНЦИЙ']);
+  rows.push(['№', 'Компетенция', 'Ср. балл']);
+  COMPETENCIES.forEach((comp, ci) => {
+    const v = document.getElementById(`comp-val-${ci}`).textContent;
+    rows.push([ci + 1, comp[0], v]);
+  });
+  rows.push(['', 'Средний балл по всем компетенциям', document.getElementById('overall-avg').textContent]);
+  rows.push([]);
+  rows.push(['ОЦЕНКА БУЛЛИТОВ']);
+  rows.push(['Компетенция', 'Буллит', 'Балл']);
+  COMPETENCIES.forEach((comp, ci) => {
+    comp[1].forEach((bname, bj) => {
+      const inp = document.getElementById(`bul-input-${ci}_${bj}`);
+      rows.push([comp[0], bname, inp ? inp.value : '']);
+    });
+  });
+  rows.push([]);
+  rows.push(['Особенности мотивации к деятельности (0–3)', val('f-motivation')]);
+  rows.push([]);
+  rows.push(['РЕЗУЛЬТАТЫ ТЕСТОВ СПОСОБНОСТЕЙ']);
+  rows.push(['Работа с числовыми данными', val('f-num-ability')]);
+  rows.push(['Работа с текстовыми данными', val('f-text-ability')]);
+  rows.push([]);
+  rows.push(['Свободные комментарии']);
+  rows.push([val('f-comments')]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:36}, {wch:48}, {wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Отчёт');
+  const fio = val('f-fio') || 'без_имени';
+  XLSX.writeFile(wb, `Отчёт_оценки_${fio.replace(/\s+/g,'_')}.xlsx`);
+}
+
+document.querySelectorAll('#threshold').forEach(el => el.addEventListener('input', recalc));
+document.querySelectorAll('input[id^="bul-input-"]').forEach(el => el.addEventListener('input', recalc));
+recalc();
+</script>
+
+</body>
+</html>
